@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Bite - Simplified ERD & Data Dictionary (80/20 Rule)</title>
+    <!-- CSS libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hb-primary: #10b981;
+            --hb-primary-hover: #059669;
+            --hb-dark: #061c15;
+            --hb-dark-surface: #0b2b20;
+            --hb-background: #f8fafc;
+            --hb-text: #0f172a;
+            --hb-muted: #64748b;
+            --hb-border: #e2e8f0;
+            --font-display: 'Outfit', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--hb-background);
+            color: var(--hb-text);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4, h5, h6, .font-display {
+            font-family: var(--font-display);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .erd-header {
+            background: linear-gradient(135deg, var(--hb-dark), #03100c);
+            padding: 2rem 1.5rem;
+            color: white;
+            border-bottom: 4px solid var(--hb-primary);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .brand-mark {
+            align-items: center;
+            background: linear-gradient(135deg, var(--hb-primary), #059669);
+            border-radius: 0.75rem;
+            color: #fff;
+            display: inline-flex;
+            font-size: 1.10rem;
+            font-weight: 800;
+            height: 2.5rem;
+            justify-content: center;
+            width: 2.5rem;
+        }
+
+        .main-container {
+            flex: 1;
+            margin-top: -2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .erd-card {
+            background-color: white;
+            border-radius: 1.25rem;
+            border: 1px solid var(--hb-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            padding: 2.5rem;
+        }
+
+        /* Tabs styling */
+        .nav-pills-custom .nav-link {
+            color: var(--hb-muted);
+            font-family: var(--font-display);
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .nav-pills-custom .nav-link.active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--hb-primary-hover);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .nav-pills-custom .nav-link:hover:not(.active) {
+            background-color: #f1f5f9;
+            color: var(--hb-text);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--hb-primary);
+            border-color: var(--hb-primary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            border-radius: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: var(--hb-primary-hover);
+            border-color: var(--hb-primary-hover);
+        }
+        .btn-outline-light {
+            border-radius: 0.5rem;
+            font-family: var(--font-display);
+            font-weight: 600;
+        }
+
+        /* Mermaid styling */
+        .mermaid-wrapper {
+            overflow-x: auto;
+            background-color: #fafbfc;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid #f1f5f9;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        .mermaid {
+            width: 100%;
+        }
+
+        /* Search input */
+        .search-wrapper {
+            position: relative;
+        }
+        .search-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--hb-muted);
+        }
+        .search-input {
+            padding-left: 2.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--hb-border);
+        }
+        .search-input:focus {
+            border-color: var(--hb-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Tables & Dictionary badges */
+        .badge-pk {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            font-weight: 600;
+        }
+        .badge-fk {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            font-weight: 600;
+        }
+        .badge-uk {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            font-weight: 600;
+        }
+        .badge-type {
+            font-family: monospace;
+            background-color: #f1f5f9;
+            color: #475569;
+            font-size: 0.75rem;
+        }
+
+        /* Markdown rendered container */
+        .markdown-body h2 {
+            border-bottom: 2px solid var(--hb-border);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        .markdown-body p, .markdown-body li {
+            line-height: 1.7;
+            color: #334155;
+        }
+        .markdown-body table {
+            width: 100%;
+            margin-bottom: 1.5rem;
+            border-collapse: collapse;
+        }
+        .markdown-body th, .markdown-body td {
+            padding: 0.75rem;
+            border: 1px solid var(--hb-border);
+        }
+        .markdown-body th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        /* Source viewer alert */
+        .source-indicator {
+            font-size: 0.85rem;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            color: var(--hb-primary-hover);
+        }
+
+        footer {
+            background-color: #03100c;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+        }
+    </style>
+    <!-- Markdown and Mermaid parsing libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+            themeVariables: {
+                fontFamily: 'Inter, sans-serif',
+                primaryColor: '#ffffff',
+                primaryTextColor: '#0f172a',
+                lineColor: '#64748b',
+                primaryBorderColor: '#0f172a'
+            }
+        });
+    </script>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="erd-header">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-md-7 d-flex align-items-center gap-3">
+                    <span class="brand-mark">HB</span>
+                    <div>
+                        <h1 class="h3 mb-1 text-white">80/20 Core ERD Viewer</h1>
+                        <p class="mb-0 text-white-50 text-uppercase small tracking-wider" style="font-size: 0.75rem; letter-spacing: 0.05em;">Healthy Bite Database System</p>
+                    </div>
+                </div>
+                <div class="col-md-5 text-md-end d-flex justify-content-md-end gap-2 flex-wrap">
+                    <a href="/healthy-bite/public/dashboard" class="btn btn-outline-light d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-grid-fill"></i> Dashboard
+                    </a>
+                    <a href="/healthy-bite/public/view-diagram.html" class="btn btn-outline-light d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-diagram-3-fill text-white-50"></i> Full Enterprise ERD
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container main-container my-5 pb-5">
+        <div class="erd-card">
+            
+            <!-- Controls and Tabs -->
+            <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4 flex-wrap gap-3">
+                <ul class="nav nav-pills nav-pills-custom gap-2" id="erdTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="diagram-tab" data-bs-toggle="tab" data-bs-target="#diagram-pane" type="button" role="tab" aria-selected="true">
+                            <i class="bi bi-diagram-3 me-2"></i>ER Diagram
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="dictionary-tab" data-bs-toggle="tab" data-bs-target="#dictionary-pane" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-table me-2"></i>Interactive Data Dictionary
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs-pane" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-file-text me-2"></i>Complete Documentation
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-3">
+                    <span id="source-status" class="source-indicator">
+                        <i class="bi bi-cpu-fill me-1"></i> Loading...
+                    </span>
+                    <a href="file:///d:/Healty%20Bite/docs/ER_DIAGRAM_SIMPLE.md" target="_blank" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" title="Open Markdown File directly">
+                        <i class="bi bi-file-earmark-code"></i> Markdown File
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="tab-content" id="erdTabsContent">
+                
+                <!-- Tab 1: ER Diagram View -->
+                <div class="tab-pane fade show active" id="diagram-pane" role="tabpanel" aria-labelledby="diagram-tab">
+                    <div class="mb-4">
+                        <h3 class="h5 mb-2">Visual 80/20 Core Entity-Relationship Diagram</h3>
+                        <p class="text-secondary small mb-0">Renders the primary relationships between the 14 core database tables. Attributes are listed in the Interactive Data Dictionary tab.</p>
+                    </div>
+                    <div class="mermaid-wrapper shadow-inner">
+                        <div class="mermaid" id="mermaid-canvas">
+                            <!-- Mermaid code loaded by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Interactive Data Dictionary -->
+                <div class="tab-pane fade" id="dictionary-pane" role="tabpanel" aria-labelledby="dictionary-tab">
+                    <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <h3 class="h5 mb-2">Interactive Schema Dictionary</h3>
+                            <p class="text-secondary small mb-0">Browse and search tables, column types, and database keys parsed straight from the Markdown design.</p>
+                        </div>
+                        <div class="search-wrapper">
+                            <i class="bi bi-search"></i>
+                            <input type="text" id="schema-search" class="form-control search-input" placeholder="Search tables or columns..." style="width: 280px;">
+                        </div>
+                    </div>
+                    <div class="row" id="dictionary-container">
+                        <!-- Populated by JS parser -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: Complete Markdown File Documentation -->
+                <div class="tab-pane fade" id="docs-pane" role="tabpanel" aria-labelledby="docs-tab">
+                    <div class="markdown-body p-2" id="markdown-rendered-content">
+                        <!-- Populated by JS Marked -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Fallback embedded Markdown content -->
+    <script type="text/markdown" id="fallback-markdown">
+# Core Database ER Diagram (80/20 Ruleset for Documentation)
+
+This diagram applies the **80/20 principle (Pareto Principle)** to the Healthy Bite SaaS platform. It condenses the 50+ database tables down to the **14 core tables** that drive 80%+ of the system's functionality (Authentication, Tenantry, Menu, Seating Sessions, Order Placement, Kitchen Routing, and Payments). 
+
+This version is optimal for project reports, system documentation, and student viva presentations, keeping the codebase easy to explain and draw.
+
+---
+
+## 1. 80/20 Core ER Diagram
+
+```mermaid
+erDiagram
+    %% Core Tenant & Users
+    Role ||--o{ User : assigns
+    Restaurant ||--o{ User : employs
+    Restaurant ||--o{ Branch : operates
+    
+    %% Menu Structure
+    Restaurant ||--o{ Category : possesses
+    Category ||--o{ FoodItem : groups
+    FoodItem ||--|| Nutrition : contains
+    
+    %% Seating & Session
+    Branch ||--o{ RestaurantTable : operates
+    RestaurantTable ||--o{ QrSession : matches
+    
+    %% Ordering & Placement
+    Customer ||--o{ Order : places
+    QrSession ||--o{ Order : authorizes
+    RestaurantTable ||--o{ Order : serves
+    Order ||--o{ OrderItem : details
+    FoodItem ||--o{ OrderItem : captures
+    
+    %% Fulfillment & Payment
+    Order ||--|| Payment : settles
+    Order ||--o{ KitchenOrder : routes
+
+    Role {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR slug UK
+    }
+    User {
+        BIGINT id PK
+        BIGINT restaurant_id FK
+        BIGINT role_id FK
+        VARCHAR name
+        VARCHAR email UK
+        VARCHAR password_hash
+        ENUM status
+    }
+    Restaurant {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR email
+        VARCHAR phone
+        VARCHAR address
+    }
+    Branch {
+        BIGINT id PK
+        BIGINT restaurant_id FK
+        VARCHAR name
+        VARCHAR phone
+        VARCHAR address
+    }
+    Category {
+        BIGINT id PK
+        BIGINT restaurant_id FK
+        VARCHAR name
+        INT sort_order
+    }
+    FoodItem {
+        BIGINT id PK
+        BIGINT category_id FK
+        VARCHAR name
+        DECIMAL price
+        ENUM status
+    }
+    Nutrition {
+        BIGINT id PK
+        BIGINT food_item_id FK "Unique"
+        INT calories
+        INT proteins
+        INT fats
+    }
+    RestaurantTable {
+        BIGINT id PK
+        BIGINT branch_id FK
+        VARCHAR table_number
+        INT capacity
+    }
+    QrSession {
+        BIGINT id PK
+        BIGINT table_id FK
+        VARCHAR session_token
+        ENUM status
+    }
+    Customer {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR email UK
+        VARCHAR phone
+    }
+    Order {
+        BIGINT id PK
+        BIGINT branch_id FK
+        BIGINT table_id FK
+        BIGINT customer_id FK
+        BIGINT qr_session_id FK
+        DECIMAL total_amount
+        ENUM order_status
+    }
+    OrderItem {
+        BIGINT id PK
+        BIGINT order_id FK
+        BIGINT food_item_id FK
+        INT quantity
+        DECIMAL unit_price
+    }
+    KitchenOrder {
+        BIGINT id PK
+        BIGINT order_id FK
+        ENUM status
+        TIMESTAMP prepared_at
+    }
+    Payment {
+        BIGINT id PK
+        BIGINT order_id FK
+        DECIMAL amount
+        VARCHAR payment_method
+        ENUM status
+    }
+```
+
+---
+
+## 2. Table Directory (80/20 Core Engine)
+
+These 14 entities provide the foundation for the entire multi-tenant SaaS application flow:
+
+1. **Role**: Dictates user permissions and administration access levels (Owner, Cashier, Kitchen, Waiter).
+2. **User**: Operational accounts scoped to specific restaurants via `restaurant_id`.
+3. **Restaurant**: The core billing tenant mapping overall corporate details.
+4. **Branch**: Splits single restaurants into geographically isolated, physical locations.
+5. **Category**: Logical menus groupings (Appetizers, Mains, Drinks) configured by the Tenant.
+6. **FoodItem**: Individual dishes containing price fields, descriptions, and statuses.
+7. **Nutrition**: Holds dietary values such as proteins, calories, fats for a particular `food_item_id`.
+8. **RestaurantTable**: Physical restaurant dining tables where QR tokens are placed.
+9. **QrSession**: Tracks active guest devices and tables during an ordering flow.
+10. **Customer**: Guest ordering profiles.
+11. **Order**: Relational transaction ticket tracking statuses (Pending, Preparing, Completed, Cancelled).
+12. **OrderItem**: Line-item details specifying order counts and prices of chosen foods.
+13. **KitchenOrder**: Routes order details into kitchen queue streams.
+14. **Payment**: Handles point-of-sale settlements, payment options, and references.
+    </script>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-auto">
+        <div class="container">
+            <p class="mb-0">Healthy Bite SaaS Platform &copy; 2026. Made for student viva presentation & design specification.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let parsedSchemaData = []; // Cache to store parsed table structures
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadMarkdownData();
+        });
+
+        // Main loading routine
+        async function loadMarkdownData() {
+            const markdownFallback = document.getElementById("fallback-markdown").textContent;
+            let rawMarkdown = markdownFallback;
+            const statusEl = document.getElementById("source-status");
+
+            try {
+                // Try fetching dynamically from docs directory
+                const response = await fetch("../docs/ER_DIAGRAM_SIMPLE.md");
+                if (response.ok) {
+                    rawMarkdown = await response.text();
+                    statusEl.innerHTML = '<i class="bi bi-cloud-check-fill text-success me-1"></i> Live MD Loaded';
+                    statusEl.classList.remove("text-danger");
+                    statusEl.style.backgroundColor = "rgba(25, 135, 84, 0.08)";
+                } else {
+                    throw new Error("HTTP response error");
+                }
+            } catch (err) {
+                console.log("Could not load dynamic file. Falling back to embedded markdown.", err);
+                statusEl.innerHTML = '<i class="bi bi-hdd-fill text-warning me-1"></i> Embedded Fallback';
+                statusEl.style.backgroundColor = "rgba(255, 193, 7, 0.08)";
+                statusEl.style.color = "#b58105";
+            }
+
+            renderViewers(rawMarkdown);
+        }
+
+        function renderViewers(markdown) {
+            // 1. Render documentation page
+            const mdContentEl = document.getElementById("markdown-rendered-content");
+            mdContentEl.innerHTML = marked.parse(markdown);
+
+            // 2. Extract and load Mermaid Diagram
+            const mermaidBlock = extractMermaidBlock(markdown);
+            if (mermaidBlock) {
+                // Render diagram canvas
+                const cleanMermaidCode = sanitizeMermaidForRendering(mermaidBlock);
+                const canvasEl = document.getElementById("mermaid-canvas");
+                canvasEl.textContent = cleanMermaidCode;
+                mermaid.run({
+                    nodes: [canvasEl]
+                });
+
+                // 3. Parse Mermaid Schema for Interactive Data Dictionary
+                parsedSchemaData = parseSchemaFromMermaid(mermaidBlock);
+                renderDataDictionary(parsedSchemaData);
+            }
+
+            // Setup search handler
+            document.getElementById("schema-search").addEventListener("input", (e) => {
+                filterDictionary(e.target.value);
+            });
+        }
+
+        // Helper: Extract mermaid code block from MD text
+        function extractMermaidBlock(mdText) {
+            const regex = /```mermaid([\s\S]*?)```/g;
+            const match = regex.exec(mdText);
+            return match ? match[1].trim() : null;
+        }
+
+        // Clean up visual attributes definitions if necessary, or just extract relationships
+        // Mermaid erDiagram requires both definitions and relations in the code block.
+        function sanitizeMermaidForRendering(mermaidCode) {
+            // Return code exactly as is, it's correct syntax
+            return mermaidCode;
+        }
+
+        // Custom JS parser: Extract tables, keys, types, and comments from Mermaid Code
+        function parseSchemaFromMermaid(mermaidCode) {
+            const tables = [];
+            
+            // Regex to find table definitions: TableName { ... }
+            const tableRegex = /(\w+)\s*\{([\s\S]*?)\}/g;
+            let match;
+
+            while ((match = tableRegex.exec(mermaidCode)) !== null) {
+                const tableName = match[1];
+                const fieldsRaw = match[2].trim().split("\n");
+                const columns = [];
+
+                fieldsRaw.forEach(line => {
+                    const cleanLine = line.trim();
+                    if (!cleanLine) return;
+
+                    // Match schema fields e.g., "BIGINT id PK", "VARCHAR slug UK", "BIGINT food_item_id FK "Unique""
+                    // Group 1: Datatype
+                    // Group 2: Fieldname
+                    // Group 3: Optional Keys/Constraints (PK, FK, UK)
+                    // Group 4: Optional Comments in double quotes
+                    const fieldRegex = /^([A-Z0-9_]+)\s+([a-z0-9_]+)(?:\s+([A-Z,\s]+))?(?:\s+"([^"]+)")?$/i;
+                    const fieldMatch = cleanLine.match(fieldRegex);
+
+                    if (fieldMatch) {
+                        columns.push({
+                            type: fieldMatch[1],
+                            name: fieldMatch[2],
+                            constraints: fieldMatch[3] ? fieldMatch[3].trim().split(/\s+/) : [],
+                            comment: fieldMatch[4] || ""
+                        });
+                    }
+                });
+
+                tables.push({
+                    name: tableName,
+                    columns: columns
+                });
+            }
+
+            return tables;
+        }
+
+        // Render dictionary UI cards
+        function renderDataDictionary(data) {
+            const container = document.getElementById("dictionary-container");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-5">No tables found.</div>';
+                return;
+            }
+
+            data.forEach(table => {
+                const colRows = table.columns.map(col => {
+                    const badges = col.constraints.map(c => {
+                        let cls = 'bg-secondary-subtle text-secondary';
+                        if (c === 'PK') cls = 'badge-pk';
+                        if (c === 'FK') cls = 'badge-fk';
+                        if (c === 'UK') cls = 'badge-uk';
+                        return `<span class="badge ${cls} me-1" style="font-size: 0.7rem;">${c}</span>`;
+                    }).join('');
+
+                    return `
+                        <tr>
+                            <td class="fw-semibold text-dark">${col.name}</td>
+                            <td><span class="badge badge-type">${col.type}</span></td>
+                            <td>${badges}</td>
+                            <td class="text-secondary small">${col.comment}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const cardHTML = `
+                    <div class="col-lg-6 mb-4 dict-card-item" data-table="${table.name.toLowerCase()}" data-columns="${table.columns.map(c => c.name.toLowerCase()).join(' ')}">
+                        <div class="card h-100 shadow-sm border-0" style="border: 1px solid var(--hb-border) !important;">
+                            <div class="card-header bg-light border-0 py-3 d-flex align-items-center justify-content-between">
+                                <h4 class="h6 mb-0 text-success"><i class="bi bi-database-fill me-2"></i>${table.name}</h4>
+                                <span class="badge bg-secondary-subtle text-secondary-emphasis" style="font-size: 0.75rem;">${table.columns.length} columns</span>
+                            </div>
+                            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                                <table class="table table-sm table-hover mb-0 align-middle" style="font-size: 0.85rem;">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Column</th>
+                                            <th>Type</th>
+                                            <th>Key</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${colRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML("beforeend", cardHTML);
+            });
+        }
+
+        // Live Search Filtering
+        function filterDictionary(query) {
+            const q = query.toLowerCase().trim();
+            const cards = document.querySelectorAll(".dict-card-item");
+
+            cards.forEach(card => {
+                const tableName = card.getAttribute("data-table");
+                const columns = card.getAttribute("data-columns");
+
+                if (tableName.includes(q) || columns.includes(q)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+    </script>
+</body>
+</html>

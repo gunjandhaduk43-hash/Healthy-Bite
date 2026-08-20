@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Bite - Enterprise Database ERD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hb-primary: #10b981;
+            --hb-primary-hover: #059669;
+            --hb-dark: #061c15;
+            --hb-dark-surface: #0b2b20;
+            --hb-background: #f8fafc;
+            --hb-text: #0f172a;
+            --font-display: 'Outfit', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+        body {
+            background-color: var(--hb-background);
+            color: var(--hb-text);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+        }
+        h1, h2, h3, .font-display {
+            font-family: var(--font-display);
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        .erd-header {
+            background: linear-gradient(135deg, var(--hb-dark), #03100c);
+            padding: 2.5rem 1.5rem;
+            color: white;
+            border-bottom: 3.5px solid var(--hb-primary);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .brand-mark {
+            align-items: center;
+            background: linear-gradient(135deg, var(--hb-primary), #059669);
+            border-radius: 0.75rem;
+            color: #fff;
+            display: inline-flex;
+            font-size: 1.10rem;
+            font-weight: 800;
+            height: 2.5rem;
+            justify-content: center;
+            width: 2.5rem;
+        }
+        .erd-container {
+            background-color: white;
+            border-radius: 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem;
+            margin-top: -2rem;
+            position: relative;
+            z-index: 10;
+        }
+        .btn-primary {
+            background-color: var(--hb-primary);
+            border-color: var(--hb-primary);
+            font-family: var(--font-display);
+            font-weight: 600;
+            transition: all 0.2s;
+            border-radius: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: var(--hb-primary-hover);
+            border-color: var(--hb-primary-hover);
+            transform: translateY(-1px);
+        }
+        .btn-outline-secondary {
+            font-family: var(--font-display);
+            font-weight: 600;
+            border-radius: 0.5rem;
+        }
+        .mermaid-wrapper {
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            padding: 1rem 0;
+            min-height: 400px;
+        }
+        .mermaid {
+            background-color: #fafbfc;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid #f1f5f9;
+            width: 100%;
+        }
+        /* Custom Mermaid Node Overrides */
+        .node rect {
+            fill: #ffffff !important;
+            stroke: #0f172a !important;
+            stroke-width: 1.5px !important;
+        }
+        .edgePath .path {
+            stroke: #64748b !important;
+            stroke-width: 1.5px !important;
+        }
+    </style>
+    <!-- Include Mermaid.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            themeVariables: {
+                fontFamily: 'Inter, sans-serif',
+                primaryColor: '#ffffff',
+                primaryTextColor: '#0f172a',
+                lineColor: '#64748b',
+                primaryBorderColor: '#0f172a'
+            }
+        });
+    </script>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="erd-header">
+        <div class="container container-max">
+            <div class="row align-items-center g-3">
+                <div class="col-md-7 d-flex align-items-center gap-3">
+                    <span class="brand-mark">HB</span>
+                    <div>
+                        <h1 class="h3 mb-1 text-white">Database ER Diagram</h1>
+                        <p class="mb-0 text-white-50 text-uppercase small tracking-wider" style="font-size: 0.75rem; letter-spacing: 0.05em;">Healthy Bite Enterprise SaaS Architecture</p>
+                    </div>
+                </div>
+                <div class="col-md-5 text-md-end d-flex justify-content-md-end gap-2 flex-wrap">
+                    <a href="/healthy-bite/public/dashboard" class="btn btn-outline-light d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-grid-fill"></i> Go to Dashboard
+                    </a>
+                    <a href="/healthy-bite/public/view-diagram-simple.html" class="btn btn-outline-light d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-bookmark-star-fill text-success"></i> Simplified Version (Report Book)
+                    </a>
+                    <a href="file:///d:/Healty%20Bite/docs/ER_DIAGRAM.md" target="_blank" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-filetype-md"></i> Open Markdown Source
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="container my-5 pb-5">
+        <div class="erd-container">
+            <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4 flex-wrap gap-3">
+                <div>
+                    <h2 class="h5 mb-1"><i class="bi bi-diagram-3-fill text-success me-2"></i>Interactive Entity Relationship Diagram</h2>
+                    <p class="text-secondary mb-0 small">Fully rendered relational schema covering all 14 architectural microservice tables.</p>
+                </div>
+                <div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
+                        <i class="bi bi-shield-check me-1"></i> Normalized to 3NF
+                    </span>
+                </div>
+            </div>
+
+            <!-- RENDERED MERMAID TARGET -->
+            <div class="mermaid-wrapper">
+                <div class="mermaid">
+erDiagram
+    Role ||--o{ User : assigns
+    Permission ||--o{ RolePermission : defines
+    Role ||--o{ RolePermission : inherits
+    User ||--o{ UserSession : hosts
+    User ||--o{ PasswordReset : requests
+    User ||--o{ ActivityLog : records
+    User ||--o{ LoginLog : tracks
+    
+    SubscriptionPlan ||--o{ Restaurant : subscribes
+    Restaurant ||--o{ Branch : spans
+    Restaurant ||--o{ RestaurantImage : lists
+    Restaurant ||--o{ RestaurantSetting : applies
+    Restaurant ||--o{ BusinessHour : schedule
+    
+    Restaurant ||--o{ Category : possesses
+    Category ||--o{ FoodItem : lists
+    FoodItem ||--o{ FoodImage : registers
+    FoodItem ||--o{ FoodVariant : sizes
+    FoodItem ||--o{ FoodCustomization : adapts
+    
+    FoodItem ||--|| Nutrition : contains
+    Ingredient ||--o{ FoodIngredient : supplies
+    FoodItem ||--o{ FoodIngredient : utilizes
+    Allergen ||--o{ FoodAllergen : targets
+    FoodItem ||--o{ FoodAllergen : flags
+    DietaryType ||--o{ FoodDietaryType : labels
+    FoodItem ||--o{ FoodDietaryType : features
+    
+    Branch ||--o{ RestaurantTable : operates
+    RestaurantTable ||--o{ QrToken : generates
+    QrToken ||--o{ QrSession : matches
+    RestaurantTable ||--o{ TableReservation : tracks
+    Customer ||--o{ TableReservation : schedules
+    
+    Customer ||--o{ CustomerFavorite : loves
+    FoodItem ||--o{ CustomerFavorite : saved
+    Branch ||--o{ CustomerRequest : services
+    RestaurantTable ||--o{ CustomerRequest : origins
+    Customer ||--o{ CustomerRequest : launches
+    
+    Branch ||--o{ Order : processes
+    RestaurantTable ||--o{ Order : originates
+    Customer ||--o{ Order : places
+    QrSession ||--o{ Order : authorizes
+    Order ||--o{ OrderItem : details
+    Order ||--o{ OrderStatusHistory : checks
+    User ||--o{ OrderStatusHistory : executes
+    
+    Branch ||--o{ KitchenQueue : monitors
+    KitchenQueue ||--o{ KitchenOrder : distributes
+    Order ||--o{ KitchenOrder : routes
+    KitchenOrder ||--o{ PreparationLog : streams
+    
+    Restaurant ||--o{ Supplier : enlists
+    Restaurant ||--o{ InventoryItem : stocks
+    InventoryItem ||--o{ StockTransaction : shifts
+    Supplier ||--o{ PurchaseOrder : sells
+    Restaurant ||--o{ PurchaseOrder : handles
+    
+    Order ||--|| Payment : settles
+    Payment ||--o{ PaymentTransaction : executes
+    
+    Restaurant ||--o{ Coupon : registers
+    Coupon ||--o{ CouponUsage : redeems
+    Order ||--o{ CouponUsage : applies
+    Customer ||--o{ CouponUsage : tracks
+    Restaurant ||--o{ LoyaltyAccount : tracks
+    Customer ||--|| LoyaltyAccount : holds
+    LoyaltyAccount ||--o{ LoyaltyTransaction : scores
+    
+    Restaurant ||--o{ RestaurantReview : scores
+    Customer ||--o{ RestaurantReview : writes
+    FoodItem ||--o{ FoodReview : evaluates
+    Customer ||--o{ FoodReview : evaluates
+    Restaurant ||--o{ Feedback : registers
+    
+    User ||--o{ Notification : alerts
+    Customer ||--o{ Notification : messages
+    Restaurant ||--o{ NotificationTemplate : designs
+    
+    Restaurant ||--o{ ExpenseRecord : pays
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top text-center">
+                <p class="text-secondary small mb-0">Use mouse wheel to zoom, or drag on wide viewports. Refer to <a href="file:///d:/Healty%20Bite/docs/ER_DIAGRAM.md" class="text-success text-decoration-none fw-semibold">ER_DIAGRAM.md</a> for data fields and foreign key mappings.</p>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

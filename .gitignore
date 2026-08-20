@@ -1,0 +1,16 @@
+.env
+/storage/logs/*
+!/storage/logs/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
+/public/qr/*
+!/public/qr/.gitkeep
+*.sql.bak
+.agents/
+.venv/
+tmp/.venv/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
