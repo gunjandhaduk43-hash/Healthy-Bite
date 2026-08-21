@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register Restaurant — Healthy Bite SaaS</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="assets/css/app.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #04120e;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #f8fafc;
+            padding: 2rem 1rem;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        .auth-card {
+            background: rgba(8, 33, 26, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.25rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            max-width: 580px;
+            width: 100%;
+        }
+        .glowing-btn-emerald {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+        }
+        .glowing-btn-emerald:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card p-4 p-md-5">
+        <div class="text-center mb-4">
+            <a href="index.html" class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-25 text-success rounded-circle mb-3 text-decoration-none" style="width: 3.5rem; height: 3.5rem;">
+                <span class="fs-4 fw-bold font-display">HB</span>
+            </a>
+            <h1 class="h3 mb-1 text-white font-display">Register Your Restaurant</h1>
+            <p class="text-white-50 small mb-0">Launch your contactless QR digital menu with real-time kitchen display.</p>
+        </div>
+
+        <form id="regForm" onsubmit="handleRegSubmit(event)">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label text-white-50 small fw-semibold">Restaurant Name</label>
+                    <input type="text" class="form-control bg-dark text-white border-secondary" required placeholder="e.g. Pure Green Kitchen" value="Pure Green Kitchen">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white-50 small fw-semibold">Cuisine Type</label>
+                    <input type="text" class="form-control bg-dark text-white border-secondary" required placeholder="Organic &amp; Salads" value="Organic &amp; Salads">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white-50 small fw-semibold">Owner Full Name</label>
+                    <input type="text" class="form-control bg-dark text-white border-secondary" required placeholder="Gunjan Dhaduk" value="Gunjan Dhaduk">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white-50 small fw-semibold">Owner Email</label>
+                    <input type="email" class="form-control bg-dark text-white border-secondary" required placeholder="owner@restaurant.com" value="owner@puregreen.com">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white-50 small fw-semibold">Phone Number</label>
+                    <input type="text" class="form-control bg-dark text-white border-secondary" required placeholder="+91 98765 43210" value="+91 98765 43210">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white-50 small fw-semibold">Account Password</label>
+                    <input type="password" class="form-control bg-dark text-white border-secondary" required placeholder="••••••••" value="Password@123">
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-white-50 small fw-semibold">Physical Restaurant Address</label>
+                    <input type="text" class="form-control bg-dark text-white border-secondary" required placeholder="123 Wellness Boulevard, Metro City" value="123 Wellness Boulevard, Metro City">
+                </div>
+            </div>
+
+            <button class="btn glowing-btn-emerald w-100 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 rounded-pill mt-4" type="submit">
+                <span>Complete Registration &amp; Open Portal</span> <i class="bi bi-arrow-right-short fs-5"></i>
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="mb-0 text-white-50 small">Already registered? <a class="text-success fw-semibold text-decoration-none" href="login.html">Sign in here</a></p>
+        </div>
+    </div>
+
+    <script>
+        function handleRegSubmit(e) {
+            e.preventDefault();
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

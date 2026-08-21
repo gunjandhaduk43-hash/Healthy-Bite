@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Healthy Bite — Digital QR Customer Menu & Order Tracker</title>
+    <meta name="description" content="Browse nutrient-dense healthy food, calculate meal macros, and place contactless table orders.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="assets/css/app.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --hb-primary: #10b981;
+            --hb-primary-hover: #059669;
+            --hb-dark: #04120e;
+        }
+        body {
+            background: #f8fafc;
+            color: #0f172a;
+            font-family: 'Inter', system-ui, sans-serif;
+            padding-bottom: 90px;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        .menu-hero-header {
+            background: linear-gradient(135deg, #06231a 0%, #0b3b2d 100%);
+            color: #ffffff;
+            border-bottom: 3px solid #10b981;
+        }
+        .table-pill {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+            font-size: 0.82rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .category-pill-btn {
+            border-radius: 9999px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.5rem 1.1rem;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+        .category-pill-btn:hover, .category-pill-btn.active {
+            background: #10b981;
+            color: #ffffff;
+            border-color: #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+        .food-card {
+            border-radius: 1rem;
+            border: 1px solid #edf2f7;
+            background: #ffffff;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+        }
+        .food-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+        .food-img-container {
+            height: 180px;
+            position: relative;
+            background: #f1f5f9;
+            overflow: hidden;
+        }
+        .food-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .food-card:hover .food-img {
+            transform: scale(1.05);
+        }
+        .macro-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.35rem;
+            background: #f1f5f9;
+            color: #334155;
+        }
+        .diet-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            text-transform: uppercase;
+        }
+        .diet-veg { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .diet-nonveg { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .diet-vegan { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+        .diet-jain { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+        .floating-cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 0.85rem 1rem;
+            z-index: 1040;
+            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.25);
+        }
+        .step-progress-item {
+            position: relative;
+            padding-left: 2.2rem;
+            padding-bottom: 1.5rem;
+        }
+        .step-progress-item:last-child {
+            padding-bottom: 0;
+        }
+        .step-progress-item::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 1.5rem;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+        .step-progress-item:last-child::before {
+            display: none;
+        }
+        .step-dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .step-progress-item.completed .step-dot {
+            background: #10b981;
+            color: #ffffff;
+        }
+        .step-progress-item.active .step-dot {
+            background: #f59e0b;
+            color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+            animation: pulse-dot 1.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="menu-hero-header py-4 position-relative">
+        <div class="container px-3 px-sm-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none text-white font-display fs-4 fw-bold">
+                    <span class="brand-mark bg-success text-white" style="width: 2rem; height: 2rem; font-size: 0.85rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center;">HB</span>
+                    <span>Healthy<span class="text-success">Bite</span> Cafe</span>
+                </a>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <div class="table-pill" id="tableBadge">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span id="currentTableText">Table 101</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-light rounded-pill px-2.5" data-bs-toggle="modal" data-bs-target="#changeTableModal" title="Switch Dining Table">
+                        <i class="bi bi-arrow-repeat"></i> Change
+                    </button>
+                    <a href="dashboard.html" class="btn btn-sm btn-light rounded-pill fw-semibold px-3" style="font-size: 0.82rem;">
+                        <i class="bi bi-speedometer2 me-1"></i> Staff Panel
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-start">
+                <h1 class="h3 fw-bold font-display text-white mb-1">Interactive Digital QR Menu</h1>
+                <p class="text-white-50 small mb-0">Select your nutrition preferences, customize recipes, and order directly to your table.</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container px-3 px-sm-4 my-4">
+
+        <!-- Active Order Banner (If customer placed an order) -->
+        <div id="activeOrderBanner" class="alert alert-warning border-warning shadow-sm rounded-4 mb-4 d-none">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="spinner-grow text-warning spinner-grow-sm" role="status"></div>
+                    <div>
+                        <div class="fw-bold text-dark font-display" id="orderBannerTitle">Order #HB-84FF is in progress!</div>
+                        <small class="text-secondary" id="orderBannerSubtitle">Kitchen is currently preparing your meal.</small>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3" onclick="openOrderTrackerModal()">
+                    <i class="bi bi-clock-history me-1"></i> Track Live Status
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Dietary Filter Row -->
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search dishes, ingredients (e.g. Avocado, Berry, Protein)..." oninput="filterDishes()">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-2 overflow-x-auto text-nowrap pb-1">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill diet-filter-btn active" data-diet="all" onclick="setDietFilter('all')">All Diets</button>
+                    <button class="btn btn-sm btn-outline-success rounded-pill diet-filter-btn" data-diet="veg" onclick="setDietFilter('veg')"><i class="bi bi-dot"></i> Veg</button>
+                    <button class="btn btn-sm btn-outline-info rounded-pill diet-filter-btn" data-diet="vegan" onclick="setDietFilter('vegan')"><i class="bi bi-leaf me-1"></i> Vegan</button>
+                    <button class="btn btn-sm btn-outline-warning text-dark rounded-pill diet-filter-btn" data-diet="jain" onclick="setDietFilter('jain')"><i class="bi bi-shield-check me-1"></i> Jain</button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill diet-filter-btn" data-diet="non_veg" onclick="setDietFilter('non_veg')"><i class="bi bi-egg me-1"></i> Non-Veg</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Horizontal Pills -->
+        <div class="d-flex gap-2 overflow-x-auto text-nowrap py-2 mb-4">
+            <button class="category-pill-btn active" data-category="all" onclick="setCategoryFilter('all')">
+                <i class="bi bi-grid me-1"></i> All Items
+            </button>
+            <button class="category-pill-btn" data-category="Salads & Greens" onclick="setCategoryFilter('Salads & Greens')">
+                🥗 Salads &amp; Greens
+            </button>
+            <button class="category-pill-btn" data-category="Fresh Smoothies" onclick="setCategoryFilter('Fresh Smoothies')">
+                🥤 Fresh Smoothies
+            </button>
+            <button class="category-pill-btn" data-category="Protein Bowls" onclick="setCategoryFilter('Protein Bowls')">
+                🍲 Protein Bowls
+            </button>
+            <button class="category-pill-btn" data-category="Detox Juices" onclick="setCategoryFilter('Detox Juices')">
+                🧃 Detox Juices
+            </button>
+            <button class="category-pill-btn" data-category="Healthy Snacks" onclick="setCategoryFilter('Healthy Snacks')">
+                🥑 Healthy Snacks
+            </button>
+        </div>
+
+        <!-- Menu Grid Container -->
+        <div class="row g-4" id="dishesGrid">
+            <!-- Dynamically populated via JS -->
+        </div>
+
+    </main>
+
+    <!-- Floating Sticky Cart Bar -->
+    <div class="floating-cart-bar" id="floatingCartBar" style="display: none;">
+        <div class="container px-3 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative">
+                    <span class="btn btn-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 2.5rem; height: 2.5rem;">
+                        <i class="bi bi-bag-check-fill fs-5"></i>
+                    </span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCountBadge">0</span>
+                </div>
+                <div>
+                    <div class="fw-bold font-display fs-5" id="cartTotalText">&#8377;0.00</div>
+                    <div class="small text-white-50" id="cartNutritionSummary">0 kcal &bull; 0g Protein</div>
+                </div>
+            </div>
+            <button class="btn glowing-btn-emerald fw-bold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#cartDrawerModal">
+                View Cart &amp; Order <i class="bi bi-arrow-right-short fs-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Customization Modal -->
+    <div class="modal fade" id="customizeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-bottom pb-3">
+                    <div>
+                        <h5 class="modal-title fw-bold font-display mb-0" id="custModalTitle">Customize Dish</h5>
+                        <small class="text-muted" id="custModalSubtitle">Choose size and add-ons</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="custFoodId">
+
+                    <!-- Portion / Size -->
+                    <label class="form-label fw-bold text-dark small text-uppercase mb-2">Select Portion Size</label>
+                    <div class="d-flex gap-2 mb-4">
+                        <div class="form-check form-check-inline border rounded-3 p-2.5 flex-fill m-0 text-center">
+                            <input class="form-check-input" type="radio" name="custSize" id="sizeRegular" value="regular" checked onchange="updateCustPrice()">
+                            <label class="form-check-label fw-semibold small d-block" for="sizeRegular">Regular Size</label>
+                        </div>
+                        <div class="form-check form-check-inline border rounded-3 p-2.5 flex-fill m-0 text-center">
+                            <input class="form-check-input" type="radio" name="custSize" id="sizeLarge" value="large" onchange="updateCustPrice()">
+                            <label class="form-check-label fw-semibold small d-block" for="sizeLarge">Large (+&#8377;80)</label>
+                        </div>
+                    </div>
+
+                    <!-- Add-ons -->
+                    <label class="form-label fw-bold text-dark small text-uppercase mb-2">Optional Superfood Add-ons</label>
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <label class="d-flex align-items-center justify-content-between p-2.5 border rounded-3 cursor-pointer">
+                            <span class="d-flex align-items-center gap-2 small fw-medium">
+                                <input type="checkbox" class="form-check-input mt-0 cust-addon" value="Extra Avocado" data-price="60" onchange="updateCustPrice()">
+                                <span>🥑 Extra Fresh Avocado</span>
+                            </span>
+                            <span class="text-success fw-bold small">+&#8377;60</span>
+                        </label>
+                        <label class="d-flex align-items-center justify-content-between p-2.5 border rounded-3 cursor-pointer">
+                            <span class="d-flex align-items-center gap-2 small fw-medium">
+                                <input type="checkbox" class="form-check-input mt-0 cust-addon" value="Organic Feta" data-price="45" onchange="updateCustPrice()">
+                                <span>🧀 Organic Feta Cheese</span>
+                            </span>
+                            <span class="text-success fw-bold small">+&#8377;45</span>
+                        </label>
+                        <label class="d-flex align-items-center justify-content-between p-2.5 border rounded-3 cursor-pointer">
+                            <span class="d-flex align-items-center gap-2 small fw-medium">
+                                <input type="checkbox" class="form-check-input mt-0 cust-addon" value="Chia Seeds & Almonds" data-price="35" onchange="updateCustPrice()">
+                                <span>🌰 Chia Seeds &amp; Almonds</span>
+                            </span>
+                            <span class="text-success fw-bold small">+&#8377;35</span>
+                        </label>
+                        <label class="d-flex align-items-center justify-content-between p-2.5 border rounded-3 cursor-pointer">
+                            <span class="d-flex align-items-center gap-2 small fw-medium">
+                                <input type="checkbox" class="form-check-input mt-0 cust-addon" value="Whey Protein Scoop" data-price="70" data-protein="15" onchange="updateCustPrice()">
+                                <span>⚡ Whey Protein Scoop (+15g Protein)</span>
+                            </span>
+                            <span class="text-success fw-bold small">+&#8377;70</span>
+                        </label>
+                    </div>
+
+                    <!-- Special Cooking Instructions -->
+                    <div class="mb-2">
+                        <label class="form-label fw-bold text-dark small text-uppercase" for="custNotes">Special Kitchen Instructions</label>
+                        <input type="text" class="form-control form-control-sm" id="custNotes" placeholder="e.g. Less dressing, dressing on the side, no onions...">
+                    </div>
+                </div>
+                <div class="modal-footer border-top p-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">Item Total</small>
+                        <span class="h5 fw-bold text-success font-display mb-0" id="custTotalDisplay">&#8377;0.00</span>
+                    </div>
+                    <button type="button" class="btn btn-success fw-bold px-4 py-2 rounded-pill" onclick="confirmAddToCart()">
+                        Add to Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart & Checkout Modal Drawer -->
+    <div class="modal fade" id="cartDrawerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-bottom pb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="brand-mark bg-success text-white" style="width: 2rem; height: 2rem; font-size: 0.85rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center;">HB</span>
+                        <h5 class="modal-title fw-bold font-display mb-0">Your Order Summary</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <!-- Left: Cart Items List -->
+                        <div class="col-lg-7 border-end-lg">
+                            <h6 class="fw-bold text-dark text-uppercase small mb-3">Selected Dishes (<span id="cartItemsCountText">0</span>)</h6>
+                            <div id="cartItemsList" class="d-flex flex-column gap-3 mb-3">
+                                <!-- Cart Items rendered via JS -->
+                            </div>
+
+                            <!-- Nutrition Total Calculator Widget -->
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <div class="fw-bold text-dark small mb-2"><i class="bi bi-heart-pulse-fill text-success me-1"></i> Total Meal Nutrition Breakdown:</div>
+                                <div class="row g-2 text-center" style="font-size: 0.8rem;">
+                                    <div class="col-3"><div class="p-2 bg-white rounded border"><div class="text-muted small">Calories</div><strong class="text-dark" id="calcTotalCalories">0 kcal</strong></div></div>
+                                    <div class="col-3"><div class="p-2 bg-white rounded border"><div class="text-muted small">Protein</div><strong class="text-success" id="calcTotalProtein">0g</strong></div></div>
+                                    <div class="col-3"><div class="p-2 bg-white rounded border"><div class="text-muted small">Carbs</div><strong class="text-info" id="calcTotalCarbs">0g</strong></div></div>
+                                    <div class="col-3"><div class="p-2 bg-white rounded border"><div class="text-muted small">Fat</div><strong class="text-warning" id="calcTotalFat">0g</strong></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Table Seating & Payment -->
+                        <div class="col-lg-5">
+                            <h6 class="fw-bold text-dark text-uppercase small mb-3">Dining &amp; Payment</h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Seated Table</label>
+                                <input type="text" class="form-control form-control-sm bg-light" id="checkoutTableInput" readonly value="Table 101">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Customer Name</label>
+                                <input type="text" class="form-control form-control-sm" id="customerNameInput" placeholder="Enter your name" value="Alice Smith">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Payment Method</label>
+                                <select class="form-select form-select-sm" id="paymentMethodSelect">
+                                    <option value="UPI / QR Code" selected>UPI (GPay / PhonePe / Paytm)</option>
+                                    <option value="Credit / Debit Card">Credit / Debit Card</option>
+                                    <option value="Cash at Counter">Cash at Counter</option>
+                                </select>
+                            </div>
+
+                            <!-- Bill Breakdown -->
+                            <div class="border-top pt-3 mt-3">
+                                <div class="d-flex justify-content-between small text-secondary mb-1">
+                                    <span>Subtotal</span>
+                                    <span id="billSubtotal">&#8377;0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between small text-secondary mb-1">
+                                    <span>GST (5%)</span>
+                                    <span id="billGst">&#8377;0.00</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold text-dark fs-5 mt-2 pt-2 border-top">
+                                    <span>Grand Total</span>
+                                    <span class="text-success font-display" id="billGrandTotal">&#8377;0.00</span>
+                                </div>
+                            </div>
+
+                            <button class="btn glowing-btn-emerald w-100 fw-bold py-2.5 mt-4 rounded-pill shadow-sm" onclick="placeCustomerOrder()">
+                                <i class="bi bi-check-circle-fill me-1"></i> Confirm &amp; Send to Kitchen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Order Tracker Modal -->
+    <div class="modal fade" id="orderTrackerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-bottom pb-3">
+                    <div>
+                        <span class="badge bg-success-subtle text-success fw-bold text-uppercase px-2 py-1" style="font-size: 0.65rem;">Live Kitchen Display</span>
+                        <h5 class="modal-title fw-bold font-display mb-0 mt-1" id="trackerModalOrderNo">Order #HB-84FF</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center p-3 bg-light rounded-4 mb-4">
+                        <div class="h6 text-muted small text-uppercase fw-bold mb-1">Estimated Preparation Time</div>
+                        <div class="display-6 fw-bold text-success font-display mb-1" id="trackerTimerDisplay">~8 mins</div>
+                        <small class="text-secondary" id="trackerStatusText">Chef has accepted your ticket and started cooking.</small>
+                    </div>
+
+                    <!-- Progress Step Items -->
+                    <div class="step-progress-wrapper" id="stepProgressList">
+                        <div class="step-progress-item completed" id="step1">
+                            <div class="step-dot"><i class="bi bi-check"></i></div>
+                            <div class="fw-bold text-dark small">Order Placed &amp; Token Verified</div>
+                            <div class="text-muted small" style="font-size: 0.72rem;">Table QR session linked</div>
+                        </div>
+                        <div class="step-progress-item completed" id="step2">
+                            <div class="step-dot"><i class="bi bi-check"></i></div>
+                            <div class="fw-bold text-dark small">Accepted by Kitchen</div>
+                            <div class="text-muted small" style="font-size: 0.72rem;">Ticket printed at chef station</div>
+                        </div>
+                        <div class="step-progress-item active" id="step3">
+                            <div class="step-dot"><i class="bi bi-fire"></i></div>
+                            <div class="fw-bold text-warning-emphasis small">Cooking &amp; Preparing Meal</div>
+                            <div class="text-muted small" style="font-size: 0.72rem;">Fresh ingredients being tossed</div>
+                        </div>
+                        <div class="step-progress-item" id="step4">
+                            <div class="step-dot"><i class="bi bi-bell"></i></div>
+                            <div class="fw-bold text-dark small">Ready for Serving</div>
+                            <div class="text-muted small" style="font-size: 0.72rem;">Waiter dispatched to table</div>
+                        </div>
+                        <div class="step-progress-item" id="step5">
+                            <div class="step-dot"><i class="bi bi-emoji-smile"></i></div>
+                            <div class="fw-bold text-dark small">Served &amp; Completed</div>
+                            <div class="text-muted small" style="font-size: 0.72rem;">Enjoy your healthy meal!</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-center">
+                        <a href="dashboard.html?tab=orders" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                            <i class="bi bi-arrow-repeat me-1"></i> Switch to Kitchen KDS (Advance Status)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Change Modal -->
+    <div class="modal fade" id="changeTableModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom">
+                    <h6 class="modal-title fw-bold">Select Seating Table</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-success text-start py-2 px-3 fw-semibold" onclick="selectTable('Table 101')">📍 Table 101 (Window)</button>
+                        <button class="btn btn-outline-success text-start py-2 px-3 fw-semibold" onclick="selectTable('Table 102')">📍 Table 102 (Garden)</button>
+                        <button class="btn btn-outline-success text-start py-2 px-3 fw-semibold" onclick="selectTable('Table 103')">📍 Table 103 (Indoor)</button>
+                        <button class="btn btn-outline-success text-start py-2 px-3 fw-semibold" onclick="selectTable('Table 104')">📍 Table 104 (Balcony)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Dishes Dataset
+        const DISHES = [
+            {
+                id: 1,
+                name: 'Avocado Kale Superfood Salad',
+                category: 'Salads & Greens',
+                diet: 'veg',
+                price: 340,
+                calories: 320,
+                protein: 8,
+                carbs: 18,
+                fat: 22,
+                image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Organic Kale, Hass Avocado, Cherry Tomatoes, Roasted Almonds, Cold-Pressed Olive Oil',
+                allergens: 'Tree Nuts (Almonds)',
+                isFeatured: true
+            },
+            {
+                id: 2,
+                name: 'Wild Berry Protein Blast Smoothie',
+                category: 'Fresh Smoothies',
+                diet: 'veg',
+                price: 260,
+                calories: 250,
+                protein: 22,
+                carbs: 35,
+                fat: 4,
+                image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Wild Blueberries, Raspberries, Banana, Unsweetened Almond Milk, Premium Whey Isolate',
+                allergens: 'Dairy, Almonds',
+                isFeatured: true
+            },
+            {
+                id: 3,
+                name: 'Mediterranean Quinoa Power Bowl',
+                category: 'Protein Bowls',
+                diet: 'vegan',
+                price: 380,
+                calories: 410,
+                protein: 16,
+                carbs: 52,
+                fat: 14,
+                image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Tri-color Quinoa, Roasted Chickpeas, Cucumber, Kalamata Olives, Tahini Lemon Drizzle',
+                allergens: 'Sesame (Tahini)',
+                isFeatured: true
+            },
+            {
+                id: 4,
+                name: 'Green Detox Celery & Apple Elixir',
+                category: 'Detox Juices',
+                diet: 'vegan',
+                price: 190,
+                calories: 120,
+                protein: 2,
+                carbs: 26,
+                fat: 0,
+                image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Cold-Pressed Celery, Green Apple, Spinach, Ginger, Fresh Lime',
+                allergens: 'None',
+                isFeatured: false
+            },
+            {
+                id: 5,
+                name: 'Grilled Herb Chicken & Sweet Potato Bowl',
+                category: 'Protein Bowls',
+                diet: 'non_veg',
+                price: 420,
+                calories: 480,
+                protein: 38,
+                carbs: 42,
+                fat: 12,
+                image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Free-range Grilled Chicken Breast, Roasted Sweet Potato Cubes, Steamed Broccoli, Herb Chimichurri',
+                allergens: 'None',
+                isFeatured: true
+            },
+            {
+                id: 6,
+                name: 'Jain Signature Sprouted Moong Salad',
+                category: 'Salads & Greens',
+                diet: 'jain',
+                price: 280,
+                calories: 220,
+                protein: 14,
+                carbs: 32,
+                fat: 3,
+                image: 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Organic Sprouted Green Moong, Pomegranate Pearls, Cucumber, Crushed Peanuts, Lemon Mint Dressing',
+                allergens: 'Peanuts',
+                isFeatured: false
+            },
+            {
+                id: 7,
+                name: 'Chia Seed Coconut Mango Pudding',
+                category: 'Healthy Snacks',
+                diet: 'vegan',
+                price: 220,
+                calories: 210,
+                protein: 6,
+                carbs: 24,
+                fat: 10,
+                image: 'https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Organic Chia Seeds, Pure Coconut Milk, Fresh Alphonso Mango Pulp, Mint Sprig',
+                allergens: 'Coconut',
+                isFeatured: false
+            },
+            {
+                id: 8,
+                name: 'Pure Golden Turmeric Glow Latte',
+                category: 'Fresh Smoothies',
+                diet: 'veg',
+                price: 180,
+                calories: 140,
+                protein: 5,
+                carbs: 16,
+                fat: 6,
+                image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80',
+                ingredients: 'Fresh Turmeric Root, Oat Milk, Black Pepper Extract, Cinnamon, Raw Forest Honey',
+                allergens: 'None',
+                isFeatured: false
+            }
+        ];
+
+        let currentCategory = 'all';
+        let currentDiet = 'all';
+        let searchQuery = '';
+        let cart = JSON.parse(localStorage.getItem('healthyBiteCart') || '[]');
+        let currentTable = new URLSearchParams(window.location.search).get('table') || 'Table 101';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentTableText').innerText = currentTable;
+            document.getElementById('checkoutTableInput').value = currentTable;
+            renderDishes();
+            updateCartUI();
+            checkActiveOrder();
+        });
+
+        function selectTable(tableName) {
+            currentTable = tableName;
+            document.getElementById('currentTableText').innerText = currentTable;
+            document.getElementById('checkoutTableInput').value = currentTable;
+            bootstrap.Modal.getInstance(document.getElementById('changeTableModal'))?.hide();
+        }
+
+        function setCategoryFilter(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-pill-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-category') === cat);
+            });
+            renderDishes();
+        }
+
+        function setDietFilter(diet) {
+            currentDiet = diet;
+            document.querySelectorAll('.diet-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-diet') === diet);
+            });
+            renderDishes();
+        }
+
+        function filterDishes() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            renderDishes();
+        }
+
+        function renderDishes() {
+            const grid = document.getElementById('dishesGrid');
+            grid.innerHTML = '';
+
+            const filtered = DISHES.filter(dish => {
+                const matchCategory = (currentCategory === 'all' || dish.category === currentCategory);
+                const matchDiet = (currentDiet === 'all' || dish.diet === currentDiet);
+                const matchSearch = (dish.name.toLowerCase().includes(searchQuery) || dish.ingredients.toLowerCase().includes(searchQuery));
+                return matchCategory && matchDiet && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-search display-4 text-muted"></i>
+                        <h5 class="fw-bold text-dark mt-3">No matching dishes found</h5>
+                        <p class="text-secondary small">Try adjusting your filters or search keywords.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(dish => {
+                const dietClasses = {
+                    veg: { class: 'diet-veg', text: 'Veg' },
+                    non_veg: { class: 'diet-nonveg', text: 'Non-Veg' },
+                    vegan: { class: 'diet-vegan', text: 'Vegan' },
+                    jain: { class: 'diet-jain', text: 'Jain' }
+                };
+                const dietMeta = dietClasses[dish.diet] || { class: 'diet-veg', text: dish.diet };
+
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="food-card h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="food-img-container">
+                                    <img src="${dish.image}" alt="${dish.name}" class="food-img" loading="lazy">
+                                    <div class="position-absolute top-0 start-0 m-2.5 d-flex gap-1">
+                                        <span class="diet-badge ${dietMeta.class}">${dietMeta.text}</span>
+                                        ${dish.isFeatured ? '<span class="badge bg-success text-white py-1 px-2" style="font-size: 0.65rem;"><i class="bi bi-star-fill me-1"></i>Chef Special</span>' : ''}
+                                    </div>
+                                </div>
+                                <div class="p-3.5">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h2 class="h6 fw-bold text-dark mb-0 font-display fs-6">${dish.name}</h2>
+                                    </div>
+                                    <p class="text-muted small mb-2" style="font-size: 0.76rem; line-height: 1.4;">${dish.ingredients}</p>
+                                    
+                                    <!-- Macro Tags -->
+                                    <div class="d-flex flex-wrap gap-1.5 mb-3">
+                                        <span class="macro-tag"><i class="bi bi-fire text-danger"></i> <strong>${dish.calories}</strong> kcal</span>
+                                        <span class="macro-tag text-success">P: <strong>${dish.protein}g</strong></span>
+                                        <span class="macro-tag text-info">C: <strong>${dish.carbs}g</strong></span>
+                                        <span class="macro-tag text-warning">F: <strong>${dish.fat}g</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3.5 pt-0 border-top mt-auto d-flex align-items-center justify-content-between pt-3">
+                                <span class="h5 fw-bold text-success font-display mb-0">&#8377;${dish.price.toFixed(2)}</span>
+                                <button class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3 py-1.5" onclick="openCustomizeModal(${dish.id})">
+                                    <i class="bi bi-plus-lg me-1"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            });
+        }
+
+        let selectedDish = null;
+
+        function openCustomizeModal(dishId) {
+            selectedDish = DISHES.find(d => d.id === dishId);
+            if (!selectedDish) return;
+
+            document.getElementById('custFoodId').value = selectedDish.id;
+            document.getElementById('custModalTitle').innerText = selectedDish.name;
+            document.getElementById('custModalSubtitle').innerText = `${selectedDish.calories} kcal • Base Price: ₹${selectedDish.price}`;
+            document.getElementById('sizeRegular').checked = true;
+            document.querySelectorAll('.cust-addon').forEach(cb => cb.checked = false);
+            document.getElementById('custNotes').value = '';
+
+            updateCustPrice();
+            new bootstrap.Modal(document.getElementById('customizeModal')).show();
+        }
+
+        function updateCustPrice() {
+            if (!selectedDish) return;
+            let total = selectedDish.price;
+            if (document.getElementById('sizeLarge').checked) total += 80;
+            document.querySelectorAll('.cust-addon:checked').forEach(cb => {
+                total += parseFloat(cb.getAttribute('data-price') || 0);
+            });
+            document.getElementById('custTotalDisplay').innerText = `₹${total.toFixed(2)}`;
+        }
+
+        function confirmAddToCart() {
+            if (!selectedDish) return;
+            const isLarge = document.getElementById('sizeLarge').checked;
+            const sizeName = isLarge ? 'Large' : 'Regular';
+            let extraPrice = isLarge ? 80 : 0;
+            let extraProtein = 0;
+
+            const selectedAddons = [];
+            document.querySelectorAll('.cust-addon:checked').forEach(cb => {
+                selectedAddons.push(cb.value);
+                extraPrice += parseFloat(cb.getAttribute('data-price') || 0);
+                if (cb.getAttribute('data-protein')) extraProtein += parseFloat(cb.getAttribute('data-protein'));
+            });
+
+            const notes = document.getElementById('custNotes').value.trim();
+
+            const cartItem = {
+                id: Date.now(),
+                foodId: selectedDish.id,
+                name: selectedDish.name,
+                size: sizeName,
+                addons: selectedAddons,
+                notes: notes,
+                unitPrice: selectedDish.price + extraPrice,
+                calories: selectedDish.calories + (isLarge ? 120 : 0),
+                protein: selectedDish.protein + (isLarge ? 6 : 0) + extraProtein,
+                carbs: selectedDish.carbs + (isLarge ? 15 : 0),
+                fat: selectedDish.fat + (isLarge ? 4 : 0),
+                quantity: 1
+            };
+
+            cart.push(cartItem);
+            localStorage.setItem('healthyBiteCart', JSON.stringify(cart));
+            bootstrap.Modal.getInstance(document.getElementById('customizeModal'))?.hide();
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCountBadge').innerText = count;
+            document.getElementById('cartItemsCountText').innerText = count;
+
+            const total = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+            const totalCalories = cart.reduce((sum, item) => sum + (item.calories * item.quantity), 0);
+            const totalProtein = cart.reduce((sum, item) => sum + (item.protein * item.quantity), 0);
+            const totalCarbs = cart.reduce((sum, item) => sum + (item.carbs * item.quantity), 0);
+            const totalFat = cart.reduce((sum, item) => sum + (item.fat * item.quantity), 0);
+
+            document.getElementById('cartTotalText').innerText = `₹${total.toFixed(2)}`;
+            document.getElementById('cartNutritionSummary').innerText = `${totalCalories} kcal • ${totalProtein}g Protein`;
+
+            document.getElementById('floatingCartBar').style.display = count > 0 ? 'block' : 'none';
+
+            // Modal Cart Items List
+            const listContainer = document.getElementById('cartItemsList');
+            if (cart.length === 0) {
+                listContainer.innerHTML = '<p class="text-muted small">Your cart is empty.</p>';
+            } else {
+                listContainer.innerHTML = cart.map((item, idx) => `
+                    <div class="p-3 border rounded-3 bg-white d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold text-dark font-display">${item.name} <span class="badge bg-light text-secondary border">${item.size}</span></div>
+                            ${item.addons.length > 0 ? `<div class="small text-muted">+ ${item.addons.join(', ')}</div>` : ''}
+                            ${item.notes ? `<div class="small text-warning-emphasis"><i class="bi bi-chat-left-text me-1"></i>${item.notes}</div>` : ''}
+                            <div class="fw-bold text-success small mt-1">₹${(item.unitPrice * item.quantity).toFixed(2)}</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-secondary rounded-circle" style="width: 28px; height: 28px; padding: 0;" onclick="changeQty(${idx}, -1)">-</button>
+                            <span class="fw-bold px-1">${item.quantity}</span>
+                            <button class="btn btn-sm btn-outline-secondary rounded-circle" style="width: 28px; height: 28px; padding: 0;" onclick="changeQty(${idx}, 1)">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Calculation Widget
+            document.getElementById('calcTotalCalories').innerText = `${totalCalories} kcal`;
+            document.getElementById('calcTotalProtein').innerText = `${totalProtein}g`;
+            document.getElementById('calcTotalCarbs').innerText = `${totalCarbs}g`;
+            document.getElementById('calcTotalFat').innerText = `${totalFat}g`;
+
+            // Bill Breakdown
+            const gst = total * 0.05;
+            const grandTotal = total + gst;
+            document.getElementById('billSubtotal').innerText = `₹${total.toFixed(2)}`;
+            document.getElementById('billGst').innerText = `₹${gst.toFixed(2)}`;
+            document.getElementById('billGrandTotal').innerText = `₹${grandTotal.toFixed(2)}`;
+        }
+
+        function changeQty(index, change) {
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            localStorage.setItem('healthyBiteCart', JSON.stringify(cart));
+            updateCartUI();
+        }
+
+        function placeCustomerOrder() {
+            if (cart.length === 0) return;
+            const custName = document.getElementById('customerNameInput').value.trim() || 'Valued Customer';
+            const payMethod = document.getElementById('paymentMethodSelect').value;
+            const orderNum = 'HB-' + Math.floor(1000 + Math.random() * 9000);
+            
+            const total = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+            const gst = total * 0.05;
+            const grandTotal = total + gst;
+
+            const orderObj = {
+                orderNumber: orderNum,
+                tableName: currentTable,
+                customerName: custName,
+                paymentMethod: payMethod,
+                items: cart.map(i => `${i.quantity}x ${i.name} (${i.size})`).join(', '),
+                totalAmount: grandTotal,
+                status: 'accepted',
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                createdAt: Date.now()
+            };
+
+            // Store in shared orders for staff panel
+            const allOrders = JSON.parse(localStorage.getItem('healthyBiteOrders') || '[]');
+            allOrders.unshift(orderObj);
+            localStorage.setItem('healthyBiteOrders', JSON.stringify(allOrders));
+
+            // Set current customer active order
+            localStorage.setItem('healthyBiteActiveOrder', JSON.stringify(orderObj));
+
+            // Clear cart
+            cart = [];
+            localStorage.removeItem('healthyBiteCart');
+            updateCartUI();
+
+            bootstrap.Modal.getInstance(document.getElementById('cartDrawerModal'))?.hide();
+            checkActiveOrder();
+            openOrderTrackerModal();
+        }
+
+        function checkActiveOrder() {
+            const activeOrder = JSON.parse(localStorage.getItem('healthyBiteActiveOrder') || 'null');
+            const banner = document.getElementById('activeOrderBanner');
+            if (activeOrder) {
+                banner.classList.remove('d-none');
+                document.getElementById('orderBannerTitle').innerText = `Order #${activeOrder.orderNumber} for ${activeOrder.tableName}`;
+                document.getElementById('orderBannerSubtitle').innerText = `Status: ${activeOrder.status.toUpperCase()} • Total: ₹${activeOrder.totalAmount.toFixed(2)}`;
+            } else {
+                banner.classList.add('d-none');
+            }
+        }
+
+        function openOrderTrackerModal() {
+            const activeOrder = JSON.parse(localStorage.getItem('healthyBiteActiveOrder') || 'null');
+            if (!activeOrder) return;
+
+            document.getElementById('trackerModalOrderNo').innerText = `Order #${activeOrder.orderNumber} (${activeOrder.tableName})`;
+            new bootstrap.Modal(document.getElementById('orderTrackerModal')).show();
+        }
+    </script>
+</body>
+</html>

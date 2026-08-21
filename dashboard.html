@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Healthy Bite — Restaurant Management & Kitchen KDS Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="assets/css/app.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --hb-primary: #10b981;
+            --hb-primary-hover: #059669;
+            --hb-dark: #061c15;
+            --hb-dark-surface: #0b2b20;
+        }
+        body {
+            background: #f8fafc;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 260px;
+            background: #061c15;
+            color: #ffffff;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-shrink: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .sidebar-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 0.7rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            font-weight: 600;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        .gradient-banner {
+            background: linear-gradient(135deg, #06231a 0%, #0d4a38 100%);
+            border-radius: 1rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .dashboard-card {
+            background: #ffffff;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .dashboard-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+        .kds-column {
+            background: #f1f5f9;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            min-height: 500px;
+        }
+        .kds-ticket {
+            background: #ffffff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid #10b981;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+        .table-badge-active {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .table-badge-occupied {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+        @media (max-width: 991px) {
+            .sidebar { display: none; }
+            .dashboard-container { flex-direction: column; }
+            .main-content { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Header -->
+    <nav class="navbar navbar-dark bg-dark d-lg-none px-3 py-2.5">
+        <div class="container-fluid p-0">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+                <span class="brand-mark bg-success text-white" style="width: 2rem; height: 2rem; font-size: 0.85rem; border-radius: 0.4rem; display: inline-flex; align-items: center; justify-content: center;">HB</span>
+                <span class="fw-bold font-display">Healthy Bite Portal</span>
+            </a>
+            <div class="d-flex gap-2">
+                <a href="menu.html" class="btn btn-sm btn-outline-success"><i class="bi bi-qr-code-scan"></i> Menu</a>
+                <button class="btn btn-sm btn-outline-light" data-bs-toggle="collapse" data-bs-target="#mobileMenu"><i class="bi bi-list"></i></button>
+            </div>
+        </div>
+        <div class="collapse navbar-collapse mt-2" id="mobileMenu">
+            <div class="d-flex flex-column gap-1 pt-2">
+                <a class="text-white text-decoration-none py-1.5" onclick="showTab('overview')"><i class="bi bi-grid-fill me-2"></i>Overview</a>
+                <a class="text-white text-decoration-none py-1.5" onclick="showTab('menu')"><i class="bi bi-egg-fried me-2"></i>Food Menu</a>
+                <a class="text-white text-decoration-none py-1.5" onclick="showTab('orders')"><i class="bi bi-fire me-2"></i>Kitchen KDS</a>
+                <a class="text-white text-decoration-none py-1.5" onclick="showTab('tables')"><i class="bi bi-qr-code me-2"></i>Tables &amp; QRs</a>
+                <a class="text-white text-decoration-none py-1.5" onclick="showTab('reviews')"><i class="bi bi-star-half me-2"></i>Reviews</a>
+                <a class="text-white text-decoration-none py-1.5" onclick="showTab('reports')"><i class="bi bi-bar-chart-line me-2"></i>Sales Reports</a>
+                <a href="index.html" class="text-danger text-decoration-none py-1.5"><i class="bi bi-box-arrow-right me-2"></i>Exit to Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Desktop Sidebar -->
+        <aside class="sidebar">
+            <div class="d-flex flex-column gap-4 w-100">
+                <a class="d-flex align-items-center gap-2 text-decoration-none text-white px-2" href="index.html">
+                    <span class="brand-mark bg-success text-white" style="width: 2.2rem; height: 2.2rem; font-size: 0.95rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center;">HB</span>
+                    <span class="fs-4 fw-bold font-display">Healthy Bite</span>
+                </a>
+                
+                <nav class="d-flex flex-column">
+                    <a class="sidebar-link active" id="nav-overview" onclick="showTab('overview')">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Overview</span>
+                    </a>
+                    <a class="sidebar-link" id="nav-menu" onclick="showTab('menu')">
+                        <i class="bi bi-egg-fried"></i>
+                        <span>Food Menu</span>
+                    </a>
+                    <a class="sidebar-link" id="nav-orders" onclick="showTab('orders')">
+                        <i class="bi bi-fire"></i>
+                        <span>Kitchen KDS Queue</span>
+                    </a>
+                    <a class="sidebar-link" id="nav-tables" onclick="showTab('tables')">
+                        <i class="bi bi-qr-code-scan"></i>
+                        <span>Table QRs</span>
+                    </a>
+                    <a class="sidebar-link" id="nav-reviews" onclick="showTab('reviews')">
+                        <i class="bi bi-star-half"></i>
+                        <span>Customer Reviews</span>
+                    </a>
+                    <a class="sidebar-link" id="nav-staff" onclick="showTab('staff')">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Staff Accounts</span>
+                    </a>
+                    <a class="sidebar-link" id="nav-reports" onclick="showTab('reports')">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                        <span>Sales Reports</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="border-top border-secondary-subtle pt-3 w-100">
+                <div class="d-flex align-items-center gap-3 mb-3 px-2">
+                    <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 2.2rem; height: 2.2rem; font-size: 0.9rem;">
+                        O
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-white mb-0 text-truncate fw-semibold small">Green Earth Bistro</p>
+                        <p class="text-success mb-0 small text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Restaurant Owner</p>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 px-2">
+                    <a href="menu.html" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-qr-code-scan"></i> Open Live QR Menu
+                    </a>
+                    <a href="index.html" class="btn btn-outline-light btn-sm d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> Sign out
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Pane -->
+        <main class="main-content">
+
+            <!-- Toast Container -->
+            <div id="toastNotification" class="toast align-items-center text-bg-success border-0 position-fixed top-0 end-0 m-4" role="alert" aria-live="assertive" aria-atomic="true" style="z-index: 1100;">
+                <div class="d-flex">
+                    <div class="toast-body" id="toastMessage">Action completed successfully!</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+
+            <!-- TAB 1: OVERVIEW -->
+            <div class="tab-pane-content" id="tab-overview">
+                <div class="gradient-banner text-white p-4 p-md-5 mb-4 shadow-sm d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <span class="text-uppercase fw-bold small text-success-light" style="color: #6ee7b7; font-size: 0.75rem; letter-spacing: 0.05em;">Owner Dashboard</span>
+                        <h1 class="h2 mb-1 text-white font-display">Green Earth Bistro</h1>
+                        <p class="mb-0 text-white-50 small">Manage your contactless digital menus, live kitchen orders, table seating tokens, and sales analytics.</p>
+                    </div>
+                    <div>
+                        <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 border border-white border-opacity-10 px-3.5 py-2 rounded-pill">
+                            <span class="badge bg-success rounded-pill px-2 py-1">Active</span>
+                            <span class="text-white small fw-semibold">12 Physical Tables</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.72rem;">Today's Revenue</span>
+                                <span class="badge bg-success-subtle text-success"><i class="bi bi-graph-up"></i> +18%</span>
+                            </div>
+                            <div class="h3 fw-bold text-dark font-display mb-1" id="statRevenue">&#8377;14,850.00</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Across 24 dining orders</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.72rem;">Active Kitchen Orders</span>
+                                <span class="badge bg-warning-subtle text-warning"><i class="bi bi-fire"></i> Live</span>
+                            </div>
+                            <div class="h3 fw-bold text-warning font-display mb-1" id="statActiveOrders">3 Orders</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Average prep: ~9 mins</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.72rem;">Table Occupancy</span>
+                                <span class="badge bg-info-subtle text-info">66%</span>
+                            </div>
+                            <div class="h3 fw-bold text-dark font-display mb-1">8 / 12 Tables</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">4 tables available</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="dashboard-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-uppercase text-secondary small fw-bold" style="font-size: 0.72rem;">Customer Rating</span>
+                                <span class="badge bg-warning-subtle text-warning">4.9 ★</span>
+                            </div>
+                            <div class="h3 fw-bold text-dark font-display mb-1">98% Positive</div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Based on 142 reviews</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile & Quick Settings -->
+                <div class="dashboard-card p-4 p-lg-5">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                        <div>
+                            <h2 class="h5 fw-bold mb-1"><i class="bi bi-shop text-success me-2"></i>Restaurant Profile Settings</h2>
+                            <p class="text-secondary small mb-0">These public details are displayed to customers on the digital QR menu.</p>
+                        </div>
+                        <button class="btn btn-sm btn-success fw-semibold px-3" onclick="saveRestaurantProfile()">Save Changes</button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Restaurant Brand Name</label>
+                            <input type="text" class="form-control" id="profileName" value="Green Earth Bistro">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Cuisine Specialization</label>
+                            <input type="text" class="form-control" id="profileCuisine" value="Organic Salads, Smoothies & Macro Protein Bowls">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Contact Phone</label>
+                            <input type="text" class="form-control" id="profilePhone" value="+91 98765 43210">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Address / Location</label>
+                            <input type="text" class="form-control" id="profileAddress" value="Plot 42, Eco City Center, Silicon Hub">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: FOOD MENU -->
+            <div class="tab-pane-content d-none" id="tab-menu">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div>
+                        <h1 class="h3 fw-bold font-display mb-1">Dishes &amp; Nutritional Menu Management</h1>
+                        <p class="text-secondary small mb-0">Configure food items, prices, calories, protein/carbs/fat macros, and allergens.</p>
+                    </div>
+                    <button class="btn btn-success fw-bold d-inline-flex align-items-center gap-2 rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addDishModal">
+                        <i class="bi bi-plus-circle-fill"></i> Add New Dish
+                    </button>
+                </div>
+
+                <div class="dashboard-card p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Dish Name &amp; Category</th>
+                                    <th>Diet Type</th>
+                                    <th>Nutrition Macros</th>
+                                    <th>Base Price</th>
+                                    <th>Availability</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardMenuTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: KITCHEN KDS QUEUE -->
+            <div class="tab-pane-content d-none" id="tab-orders">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div>
+                        <h1 class="h3 fw-bold font-display mb-1"><i class="bi bi-fire text-warning me-2"></i>Live Kitchen Display (KDS)</h1>
+                        <p class="text-secondary small mb-0">Chef ticket queue. Click the buttons below to advance statuses in real time.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="simulateNewOrder()">
+                            <i class="bi bi-plus-lg me-1"></i> Simulate Customer Order
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Column 1: New / Accepted -->
+                    <div class="col-lg-4">
+                        <div class="kds-column">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-dark font-display mb-0 text-uppercase small"><i class="bi bi-inbox-fill text-info me-1"></i> New Tickets</h6>
+                                <span class="badge bg-info rounded-pill" id="countAccepted">0</span>
+                            </div>
+                            <div id="kdsAcceptedList" class="d-flex flex-column gap-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Preparing -->
+                    <div class="col-lg-4">
+                        <div class="kds-column" style="background: #fffbeb; border: 1px solid #fde68a;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-warning-emphasis font-display mb-0 text-uppercase small"><i class="bi bi-fire text-warning me-1"></i> Cooking in Progress</h6>
+                                <span class="badge bg-warning text-dark rounded-pill" id="countPreparing">0</span>
+                            </div>
+                            <div id="kdsPreparingList" class="d-flex flex-column gap-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Ready / Served -->
+                    <div class="col-lg-4">
+                        <div class="kds-column" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-success font-display mb-0 text-uppercase small"><i class="bi bi-check-circle-fill text-success me-1"></i> Ready for Serving</h6>
+                                <span class="badge bg-success rounded-pill" id="countReady">0</span>
+                            </div>
+                            <div id="kdsReadyList" class="d-flex flex-column gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: TABLES & QRs -->
+            <div class="tab-pane-content d-none" id="tab-tables">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div>
+                        <h1 class="h3 fw-bold font-display mb-1">Physical Tables &amp; QR Standees</h1>
+                        <p class="text-secondary small mb-0">Generate cryptographically secure QR seating flyers for dining tables.</p>
+                    </div>
+                    <button class="btn btn-success fw-bold rounded-pill px-4" onclick="addDemoTable()">
+                        <i class="bi bi-plus-lg me-1"></i> Add Table
+                    </button>
+                </div>
+
+                <div class="row g-4" id="tablesGrid">
+                    <!-- Dynamic Tables rendered here -->
+                </div>
+            </div>
+
+            <!-- TAB 5: REVIEWS -->
+            <div class="tab-pane-content d-none" id="tab-reviews">
+                <div class="mb-4">
+                    <h1 class="h3 fw-bold font-display mb-1">Customer Reviews &amp; Macro Feedback</h1>
+                    <p class="text-secondary small mb-0">Verified customer feedback from table QR sessions.</p>
+                </div>
+
+                <div class="row g-3" id="reviewsGrid">
+                    <!-- Dynamic Reviews -->
+                </div>
+            </div>
+
+            <!-- TAB 6: STAFF -->
+            <div class="tab-pane-content d-none" id="tab-staff">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 fw-bold font-display mb-1">Staff Accounts &amp; Access Roles</h1>
+                        <p class="text-secondary small mb-0">Manage kitchen chefs, head cooks, and floor waiters.</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Staff Member</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Chef Marco Rossi</strong></td>
+                                    <td>marco@greenearth.test</td>
+                                    <td><span class="badge bg-warning text-dark">Head Chef</span></td>
+                                    <td><span class="badge bg-success-subtle text-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sarah Jenkins</strong></td>
+                                    <td>sarah@greenearth.test</td>
+                                    <td><span class="badge bg-info-subtle text-info">KDS Cook</span></td>
+                                    <td><span class="badge bg-success-subtle text-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>David Kumar</strong></td>
+                                    <td>david@greenearth.test</td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary">Floor Waiter</span></td>
+                                    <td><span class="badge bg-success-subtle text-success">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: REPORTS -->
+            <div class="tab-pane-content d-none" id="tab-reports">
+                <div class="mb-4">
+                    <h1 class="h3 fw-bold font-display mb-1">Executive Sales &amp; Macro Analytics</h1>
+                    <p class="text-secondary small mb-0">Live revenue breakdown and most ordered healthy recipes.</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="dashboard-card p-4">
+                            <h5 class="fw-bold font-display mb-3">Top Selling Healthy Recipes</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <span>🥑 Avocado Kale Superfood Salad</span>
+                                    <span class="fw-bold text-success">48 Orders &bull; &#8377;16,320</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <span>⚡ Wild Berry Protein Blast Smoothie</span>
+                                    <span class="fw-bold text-success">36 Orders &bull; &#8377;9,360</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <span>🍲 Mediterranean Quinoa Power Bowl</span>
+                                    <span class="fw-bold text-success">29 Orders &bull; &#8377;11,020</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="dashboard-card p-4">
+                            <h5 class="fw-bold font-display mb-3">Payment Method Breakdown</h5>
+                            <div class="p-3 bg-light rounded-3 mb-2 d-flex justify-content-between">
+                                <span><i class="bi bi-qr-code text-success me-2"></i>UPI / QR Code</span>
+                                <strong>74% (&#8377;10,989)</strong>
+                            </div>
+                            <div class="p-3 bg-light rounded-3 mb-2 d-flex justify-content-between">
+                                <span><i class="bi bi-credit-card text-primary me-2"></i>Credit / Debit Cards</span>
+                                <strong>20% (&#8377;2,970)</strong>
+                            </div>
+                            <div class="p-3 bg-light rounded-3 d-flex justify-content-between">
+                                <span><i class="bi bi-cash text-warning me-2"></i>Cash at Counter</span>
+                                <strong>6% (&#8377;891)</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Add Dish Modal -->
+    <div class="modal fade" id="addDishModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold font-display">Add New Healthy Recipe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Dish Name</label>
+                            <input type="text" class="form-control" id="newDishName" placeholder="e.g. Dragonfruit Açai Bowl">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Category</label>
+                            <select class="form-select" id="newDishCat">
+                                <option value="Salads & Greens">Salads &amp; Greens</option>
+                                <option value="Fresh Smoothies">Fresh Smoothies</option>
+                                <option value="Protein Bowls">Protein Bowls</option>
+                                <option value="Detox Juices">Detox Juices</option>
+                                <option value="Healthy Snacks">Healthy Snacks</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Diet Type</label>
+                            <select class="form-select" id="newDishDiet">
+                                <option value="veg">Veg</option>
+                                <option value="vegan">Vegan</option>
+                                <option value="non_veg">Non-Veg</option>
+                                <option value="jain">Jain</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Base Price (&#8377;)</label>
+                            <input type="number" class="form-control" id="newDishPrice" placeholder="290">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Calories (kcal)</label>
+                            <input type="number" class="form-control" id="newDishCal" placeholder="310">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Protein (g)</label>
+                            <input type="number" class="form-control" id="newDishProtein" placeholder="12">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Carbs (g)</label>
+                            <input type="number" class="form-control" id="newDishCarbs" placeholder="38">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Fat (g)</label>
+                            <input type="number" class="form-control" id="newDishFat" placeholder="8">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Ingredients List</label>
+                            <input type="text" class="form-control" id="newDishIngr" placeholder="Fresh Organic Pitaya, Banana, Coconut Flakes, Chia Seeds">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success fw-bold px-4" onclick="saveNewDish()">Add Dish to Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable QR Standee Modal -->
+    <div class="modal fade" id="qrFlyerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-success-subtle text-success fw-bold text-uppercase" style="font-size: 0.65rem;">Printable Standee</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="border rounded-4 p-4 bg-white shadow-sm mb-3">
+                    <span class="brand-mark bg-success text-white mb-2" style="width: 2.4rem; height: 2.4rem; font-size: 1rem; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center;">HB</span>
+                    <h5 class="fw-bold font-display text-dark mb-0">Green Earth Bistro</h5>
+                    <p class="text-success fw-bold fs-5 mb-3" id="flyerTableTitle">Table 101</p>
+                    
+                    <!-- Real QR Code Generator using QuickChart API -->
+                    <img id="flyerQrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://healthybite2.netlify.app/menu.html?table=101" alt="Table QR Code" class="img-fluid rounded border p-2 mb-3" style="width: 170px; height: 170px;">
+                    
+                    <p class="text-secondary small mb-0 fw-semibold">📱 Scan with Camera to View Menu &amp; Order</p>
+                </div>
+                <button class="btn btn-success fw-bold w-100 rounded-pill" onclick="window.print()">
+                    <i class="bi bi-printer-fill me-1"></i> Print QR Standee
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let menuItems = [
+            { id: 1, name: 'Avocado Kale Superfood Salad', category: 'Salads & Greens', diet: 'veg', price: 340, cal: 320, p: 8, c: 18, f: 22, available: true },
+            { id: 2, name: 'Wild Berry Protein Blast Smoothie', category: 'Fresh Smoothies', diet: 'veg', price: 260, cal: 250, p: 22, c: 35, f: 4, available: true },
+            { id: 3, name: 'Mediterranean Quinoa Power Bowl', category: 'Protein Bowls', diet: 'vegan', price: 380, cal: 410, p: 16, c: 52, f: 14, available: true },
+            { id: 4, name: 'Green Detox Celery & Apple Elixir', category: 'Detox Juices', diet: 'vegan', price: 190, cal: 120, p: 2, c: 26, f: 0, available: true },
+            { id: 5, name: 'Grilled Herb Chicken Bowl', category: 'Protein Bowls', diet: 'non_veg', price: 420, cal: 480, p: 38, c: 42, f: 12, available: true },
+            { id: 6, name: 'Jain Sprouted Moong Salad', category: 'Salads & Greens', diet: 'jain', price: 280, cal: 220, p: 14, c: 32, f: 3, available: true }
+        ];
+
+        let tables = [
+            { id: 101, name: 'Table 101 (Window)', capacity: 4, status: 'Occupied', token: 'hb_tok_101' },
+            { id: 102, name: 'Table 102 (Garden)', capacity: 2, status: 'Available', token: 'hb_tok_102' },
+            { id: 103, name: 'Table 103 (Indoor)', capacity: 6, status: 'Occupied', token: 'hb_tok_103' },
+            { id: 104, name: 'Table 104 (Balcony)', capacity: 4, status: 'Available', token: 'hb_tok_104' }
+        ];
+
+        let reviews = [
+            { author: 'Alice Smith', table: 'Table 101', rating: 5, text: 'The Avocado Kale Salad and Berry smoothie were absolutely top tier! Macros calculated accurately.', time: '20 mins ago' },
+            { author: 'Rahul Mehta', table: 'Table 103', rating: 5, text: 'Love the QR contactless experience. Ordered Jain Moong Salad with custom lemon dressing!', time: '1 hour ago' },
+            { author: 'Sneha Patel', table: 'Table 102', rating: 4.8, text: 'High protein options are incredible for fitness lovers.', time: '3 hours ago' }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) showTab(tabParam);
+
+            renderMenuTable();
+            renderKDSTickets();
+            renderTables();
+            renderReviews();
+        });
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-pane-content').forEach(p => p.classList.add('d-none'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+
+            const targetPane = document.getElementById('tab-' + tabName);
+            const targetNav = document.getElementById('nav-' + tabName);
+            if (targetPane) targetPane.classList.remove('d-none');
+            if (targetNav) targetNav.classList.add('active');
+        }
+
+        function showToast(msg) {
+            document.getElementById('toastMessage').innerText = msg;
+            new bootstrap.Toast(document.getElementById('toastNotification')).show();
+        }
+
+        function renderMenuTable() {
+            const tbody = document.getElementById('dashboardMenuTableBody');
+            tbody.innerHTML = menuItems.map(item => `
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark font-display">${item.name}</div>
+                        <small class="text-muted">${item.category}</small>
+                    </td>
+                    <td><span class="badge ${item.diet === 'veg' ? 'bg-success-subtle text-success' : (item.diet === 'vegan' ? 'bg-info-subtle text-info' : (item.diet === 'jain' ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger'))} text-uppercase">${item.diet}</span></td>
+                    <td><small class="text-muted">${item.cal} kcal &bull; P:${item.p}g &bull; C:${item.c}g &bull; F:${item.f}g</small></td>
+                    <td><strong class="text-success font-display">₹${item.price.toFixed(2)}</strong></td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleDishAvailability(${item.id})">
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDish(${item.id})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleDishAvailability(id) {
+            const dish = menuItems.find(d => d.id === id);
+            if (dish) {
+                dish.available = !dish.available;
+                showToast(`Updated availability for "${dish.name}"`);
+            }
+        }
+
+        function deleteDish(id) {
+            menuItems = menuItems.filter(d => d.id !== id);
+            renderMenuTable();
+            showToast('Dish removed from menu');
+        }
+
+        function saveNewDish() {
+            const name = document.getElementById('newDishName').value.trim();
+            const cat = document.getElementById('newDishCat').value;
+            const diet = document.getElementById('newDishDiet').value;
+            const price = parseFloat(document.getElementById('newDishPrice').value) || 250;
+            const cal = parseInt(document.getElementById('newDishCal').value) || 300;
+            const p = parseInt(document.getElementById('newDishProtein').value) || 15;
+            const c = parseInt(document.getElementById('newDishCarbs').value) || 30;
+            const f = parseInt(document.getElementById('newDishFat').value) || 8;
+
+            if (!name) return alert('Please enter dish name');
+
+            menuItems.push({
+                id: Date.now(),
+                name, category: cat, diet, price, cal, p, c, f, available: true
+            });
+
+            renderMenuTable();
+            bootstrap.Modal.getInstance(document.getElementById('addDishModal'))?.hide();
+            showToast(`Added "${name}" to digital menu!`);
+        }
+
+        function renderKDSTickets() {
+            let orders = JSON.parse(localStorage.getItem('healthyBiteOrders') || '[]');
+            if (orders.length === 0) {
+                orders = [
+                    { orderNumber: 'HB-84FF', tableName: 'Table 101', customerName: 'Alice Smith', items: '1x Avocado Kale Salad (Regular), 1x Berry Protein Blast', totalAmount: 630.00, status: 'preparing', timestamp: '2 mins ago' },
+                    { orderNumber: 'HB-8501', tableName: 'Table 103', customerName: 'Rahul Mehta', items: '2x Quinoa Power Bowl (Large), 1x Detox Celery Juice', totalAmount: 950.00, status: 'accepted', timestamp: 'Just now' }
+                ];
+                localStorage.setItem('healthyBiteOrders', JSON.stringify(orders));
+            }
+
+            const acceptedList = document.getElementById('kdsAcceptedList');
+            const preparingList = document.getElementById('kdsPreparingList');
+            const readyList = document.getElementById('kdsReadyList');
+
+            acceptedList.innerHTML = '';
+            preparingList.innerHTML = '';
+            readyList.innerHTML = '';
+
+            let countAcc = 0, countPrep = 0, countRdy = 0;
+
+            orders.forEach((o, index) => {
+                const ticketHtml = `
+                    <div class="kds-ticket">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold font-display fs-6 text-dark">${o.orderNumber}</span>
+                            <span class="badge bg-success-subtle text-success">${o.tableName}</span>
+                        </div>
+                        <small class="text-muted d-block mb-2"><i class="bi bi-person me-1"></i>${o.customerName} &bull; ${o.timestamp}</small>
+                        <p class="small fw-semibold text-dark mb-2">${o.items}</p>
+                        <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                            <span class="fw-bold text-success small">₹${o.totalAmount.toFixed(2)}</span>
+                            <div>
+                                ${o.status === 'accepted' ? `<button class="btn btn-sm btn-warning fw-bold py-1 px-2" onclick="advanceOrderStatus(${index}, 'preparing')"><i class="bi bi-fire me-1"></i>Start Cooking</button>` : ''}
+                                ${o.status === 'preparing' ? `<button class="btn btn-sm btn-success fw-bold py-1 px-2" onclick="advanceOrderStatus(${index}, 'ready')"><i class="bi bi-bell me-1"></i>Mark Ready</button>` : ''}
+                                ${o.status === 'ready' ? `<button class="btn btn-sm btn-primary fw-bold py-1 px-2" onclick="advanceOrderStatus(${index}, 'completed')"><i class="bi bi-check2-all me-1"></i>Serve Table</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (o.status === 'accepted') {
+                    acceptedList.innerHTML += ticketHtml;
+                    countAcc++;
+                } else if (o.status === 'preparing') {
+                    preparingList.innerHTML += ticketHtml;
+                    countPrep++;
+                } else if (o.status === 'ready') {
+                    readyList.innerHTML += ticketHtml;
+                    countRdy++;
+                }
+            });
+
+            document.getElementById('countAccepted').innerText = countAcc;
+            document.getElementById('countPreparing').innerText = countPrep;
+            document.getElementById('countReady').innerText = countRdy;
+        }
+
+        function advanceOrderStatus(index, newStatus) {
+            const orders = JSON.parse(localStorage.getItem('healthyBiteOrders') || '[]');
+            orders[index].status = newStatus;
+            localStorage.setItem('healthyBiteOrders', JSON.stringify(orders));
+
+            // Sync with customer's active order if matching
+            const activeOrder = JSON.parse(localStorage.getItem('healthyBiteActiveOrder') || 'null');
+            if (activeOrder && activeOrder.orderNumber === orders[index].orderNumber) {
+                activeOrder.status = newStatus;
+                localStorage.setItem('healthyBiteActiveOrder', JSON.stringify(activeOrder));
+            }
+
+            renderKDSTickets();
+            showToast(`Order status updated to "${newStatus.toUpperCase()}"!`);
+        }
+
+        function simulateNewOrder() {
+            const orderNum = 'HB-' + Math.floor(1000 + Math.random() * 9000);
+            const tableNum = 'Table ' + (101 + Math.floor(Math.random() * 4));
+            const newOrder = {
+                orderNumber: orderNum,
+                tableName: tableNum,
+                customerName: 'Guest Dining Customer',
+                items: '1x Superfood Quinoa Bowl, 1x Fresh Detox Juice',
+                totalAmount: 570.00,
+                status: 'accepted',
+                timestamp: 'Just now'
+            };
+            const orders = JSON.parse(localStorage.getItem('healthyBiteOrders') || '[]');
+            orders.unshift(newOrder);
+            localStorage.setItem('healthyBiteOrders', JSON.stringify(orders));
+            renderKDSTickets();
+            showToast(`New live ticket received: ${orderNum}!`);
+        }
+
+        function renderTables() {
+            const grid = document.getElementById('tablesGrid');
+            grid.innerHTML = tables.map(t => `
+                <div class="col-md-6 col-lg-3">
+                    <div class="dashboard-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge ${t.status === 'Occupied' ? 'table-badge-occupied' : 'table-badge-active'} px-2.5 py-1 rounded-pill fw-bold" style="font-size: 0.7rem;">${t.status}</span>
+                                <small class="text-muted"><i class="bi bi-people me-1"></i>Cap: ${t.capacity}</small>
+                            </div>
+                            <h4 class="h5 fw-bold font-display text-dark mb-1">${t.name}</h4>
+                            <p class="text-secondary small font-monospace mb-3" style="font-size: 0.72rem;">Token: ${t.token}</p>
+                        </div>
+                        <button class="btn btn-outline-success btn-sm w-100 fw-bold rounded-pill" onclick="openQrFlyer('${t.name}', '${t.id}')">
+                            <i class="bi bi-qr-code-scan me-1"></i> View QR Standee
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openQrFlyer(tableName, tableId) {
+            document.getElementById('flyerTableTitle').innerText = tableName;
+            const targetUrl = encodeURIComponent(`https://healthybite2.netlify.app/menu.html?table=${tableId}`);
+            document.getElementById('flyerQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${targetUrl}`;
+            new bootstrap.Modal(document.getElementById('qrFlyerModal')).show();
+        }
+
+        function addDemoTable() {
+            const nextId = 101 + tables.length;
+            tables.push({
+                id: nextId,
+                name: `Table ${nextId} (Seating)`,
+                capacity: 4,
+                status: 'Available',
+                token: `hb_tok_${nextId}`
+            });
+            renderTables();
+            showToast(`Added Table ${nextId}!`);
+        }
+
+        function renderReviews() {
+            const grid = document.getElementById('reviewsGrid');
+            grid.innerHTML = reviews.map(r => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="dashboard-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold text-dark font-display">${r.author}</div>
+                            <span class="badge bg-warning text-dark">${r.rating} ★</span>
+                        </div>
+                        <small class="text-muted d-block mb-2"><i class="bi bi-geo-alt me-1"></i>${r.table} &bull; ${r.time}</small>
+                        <p class="text-secondary small mb-0">"${r.text}"</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveRestaurantProfile() {
+            showToast('Restaurant profile settings saved successfully!');
+        }
+    </script>
+</body>
+</html>
