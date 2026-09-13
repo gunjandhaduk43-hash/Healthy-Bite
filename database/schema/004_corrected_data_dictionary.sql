@@ -1,6 +1,6 @@
 USE healthy_bite;
 
--- 1. Table: admin
+-- 1. Table: admin (Platform Administration Entity)
 CREATE TABLE IF NOT EXISTS admin (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
@@ -8,10 +8,22 @@ CREATE TABLE IF NOT EXISTS admin (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Table: user (users)
+-- 2. Table: roles (Role Definitions Master)
+CREATE TABLE IF NOT EXISTS roles (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(80) NOT NULL,
+    slug VARCHAR(50) NOT NULL,
+    description VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY roles_slug_unique (slug)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. Table: user (users)
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    admin_id BIGINT UNSIGNED NOT NULL,
+    admin_id BIGINT UNSIGNED NULL,
+    role_id BIGINT UNSIGNED NULL,
     restaurant_id BIGINT UNSIGNED NULL,
     name VARCHAR(120) NOT NULL,
     email VARCHAR(190) NOT NULL,
@@ -21,11 +33,13 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY users_email_unique (email),
     KEY users_admin_id_index (admin_id),
+    KEY users_role_id_index (role_id),
     KEY users_restaurant_id_index (restaurant_id),
-    CONSTRAINT users_admin_id_foreign FOREIGN KEY (admin_id) REFERENCES admin (id) ON UPDATE CASCADE ON DELETE RESTRICT
+    CONSTRAINT users_admin_id_foreign FOREIGN KEY (admin_id) REFERENCES admin (id) ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT users_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles (id) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Table: restaurant (restaurants)
+-- 4. Table: restaurant (restaurants)
 CREATE TABLE IF NOT EXISTS restaurants (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     owner_user_id BIGINT UNSIGNED NULL,
@@ -39,18 +53,16 @@ CREATE TABLE IF NOT EXISTS restaurants (
     description VARCHAR(1000) NULL,
     approval_status ENUM('pending', 'approved', 'suspended') NOT NULL DEFAULT 'approved',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY restaurants_owner_user_id_index (owner_user_id),
+    CONSTRAINT restaurants_owner_user_id_foreign FOREIGN KEY (owner_user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Foreign key for users -> restaurant
 ALTER TABLE users ADD CONSTRAINT users_restaurant_id_foreign
     FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON UPDATE CASCADE ON DELETE SET NULL;
 
--- Foreign key for restaurant -> owner user
-ALTER TABLE restaurants ADD CONSTRAINT restaurants_owner_user_id_foreign
-    FOREIGN KEY (owner_user_id) REFERENCES users (id) ON UPDATE CASCADE ON DELETE SET NULL;
-
--- 4. Table: branch (branches)
+-- 5. Table: branch (branches)
 CREATE TABLE IF NOT EXISTS branches (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     restaurant_id BIGINT UNSIGNED NOT NULL,
@@ -63,7 +75,7 @@ CREATE TABLE IF NOT EXISTS branches (
     CONSTRAINT branches_restaurant_id_foreign FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 5. Table: category (categories)
+-- 6. Table: category (categories)
 CREATE TABLE IF NOT EXISTS categories (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     restaurant_id BIGINT UNSIGNED NOT NULL,
@@ -73,46 +85,77 @@ CREATE TABLE IF NOT EXISTS categories (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY categories_restaurant_name_unique (restaurant_id, name),
+    KEY categories_restaurant_id_index (restaurant_id),
     CONSTRAINT categories_restaurant_id_foreign FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 6. Table: food_item (food_items)
+-- 7. Table: food_item (food_items)
 CREATE TABLE IF NOT EXISTS food_items (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     category_id BIGINT UNSIGNED NOT NULL,
     name VARCHAR(160) NOT NULL,
+    description VARCHAR(1000) NULL,
+    image VARCHAR(255) NULL,
     ingredients TEXT NULL,
     base_price DECIMAL(10,2) NOT NULL,
-    image VARCHAR(255) NULL,
     calories INT NULL,
-    protein INT NULL,
-    carbs INT NULL,
-    fat INT NULL,
+    protein DECIMAL(8,2) NULL,
+    carbs DECIMAL(8,2) NULL,
+    fat DECIMAL(8,2) NULL,
+    fiber_g DECIMAL(8,2) NULL,
+    sugar_g DECIMAL(8,2) NULL,
     allergens VARCHAR(255) NULL,
     preparation_time INT NULL,
-    spice_level VARCHAR(50) NULL,
+    spice_level VARCHAR(50) NULL DEFAULT 'medium',
     food_type VARCHAR(50) NOT NULL DEFAULT 'veg',
-    is_available BOOLEAN NOT NULL DEFAULT 1,
-    is_featured BOOLEAN NOT NULL DEFAULT 0,
+    serving_size VARCHAR(80) NULL,
+    is_available TINYINT(1) NOT NULL DEFAULT 1,
+    is_featured TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY food_items_category_id_index (category_id),
     CONSTRAINT food_items_category_id_foreign FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 7. Table: restaurant_table (restaurant_tables)
+-- 8. Table: food_variant (food_variants)
+CREATE TABLE IF NOT EXISTS food_variants (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    food_item_id BIGINT UNSIGNED NOT NULL,
+    name VARCHAR(80) NOT NULL,
+    price_adjustment DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY food_variants_food_item_id_index (food_item_id),
+    CONSTRAINT food_variants_food_item_id_foreign FOREIGN KEY (food_item_id) REFERENCES food_items (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. Table: food_customization (food_customizations)
+CREATE TABLE IF NOT EXISTS food_customizations (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    food_item_id BIGINT UNSIGNED NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    price_adjustment DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY food_customizations_food_item_id_index (food_item_id),
+    CONSTRAINT food_customizations_food_item_id_foreign FOREIGN KEY (food_item_id) REFERENCES food_items (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 10. Table: restaurant_table (restaurant_tables)
 CREATE TABLE IF NOT EXISTS restaurant_tables (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     branch_id BIGINT UNSIGNED NOT NULL,
     table_number VARCHAR(80) NOT NULL,
+    capacity SMALLINT UNSIGNED NOT NULL DEFAULT 2,
     status ENUM('available', 'occupied', 'cleaning', 'out_of_service') NOT NULL DEFAULT 'available',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY restaurant_tables_branch_number_unique (branch_id, table_number),
+    KEY restaurant_tables_branch_id_index (branch_id),
     CONSTRAINT restaurant_tables_branch_id_foreign FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 8. Table: qr_token (qr_tokens)
+-- 11. Table: qr_token (qr_tokens)
 CREATE TABLE IF NOT EXISTS qr_tokens (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     restaurant_table_id BIGINT UNSIGNED NOT NULL,
@@ -126,58 +169,14 @@ CREATE TABLE IF NOT EXISTS qr_tokens (
     CONSTRAINT qr_tokens_table_id_foreign FOREIGN KEY (restaurant_table_id) REFERENCES restaurant_tables (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 9. Table: food_variant (food_variants)
-CREATE TABLE IF NOT EXISTS food_variants (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    food_item_id BIGINT UNSIGNED NOT NULL,
-    name VARCHAR(80) NOT NULL,
-    price_adjustment DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY food_variants_food_item_id_index (food_item_id),
-    CONSTRAINT food_variants_food_item_id_foreign FOREIGN KEY (food_item_id) REFERENCES food_items (id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 10. Table: food_customization (food_customizations)
-CREATE TABLE IF NOT EXISTS food_customizations (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    food_item_id BIGINT UNSIGNED NOT NULL,
-    name VARCHAR(120) NOT NULL,
-    price_adjustment DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY food_customizations_food_item_id_index (food_item_id),
-    CONSTRAINT food_customizations_food_item_id_foreign FOREIGN KEY (food_item_id) REFERENCES food_items (id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 11. Table: customer (customers)
+-- 12. Table: customer (customers)
 CREATE TABLE IF NOT EXISTS customers (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     phone VARCHAR(30) NULL,
+    email VARCHAR(190) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 12. Table: review (reviews)
-CREATE TABLE IF NOT EXISTS reviews (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    customer_id BIGINT UNSIGNED NOT NULL,
-    restaurant_id BIGINT UNSIGNED NOT NULL,
-    food_item_id BIGINT UNSIGNED NULL,
-    restaurant_table_id BIGINT UNSIGNED NULL,
-    rating INT NOT NULL,
-    comment TEXT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY reviews_customer_id_index (customer_id),
-    KEY reviews_restaurant_id_index (restaurant_id),
-    KEY reviews_food_item_id_index (food_item_id),
-    KEY reviews_restaurant_table_id_index (restaurant_table_id),
-    CONSTRAINT reviews_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT reviews_restaurant_id_foreign FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT reviews_food_item_id_foreign FOREIGN KEY (food_item_id) REFERENCES food_items (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT reviews_restaurant_table_id_foreign FOREIGN KEY (restaurant_table_id) REFERENCES restaurant_tables (id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 13. Table: order (orders)
@@ -190,11 +189,14 @@ CREATE TABLE IF NOT EXISTS orders (
     status ENUM('pending', 'accepted', 'preparing', 'ready', 'served', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
     customer_note VARCHAR(500) NULL,
     subtotal DECIMAL(10,2) NOT NULL,
+    tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     total_amount DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY orders_order_number_unique (order_number),
     KEY orders_branch_status_index (branch_id, status),
+    KEY orders_customer_id_index (customer_id),
+    KEY orders_restaurant_table_id_index (restaurant_table_id),
     CONSTRAINT orders_branch_id_foreign FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT orders_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT orders_table_id_foreign FOREIGN KEY (restaurant_table_id) REFERENCES restaurant_tables (id) ON DELETE RESTRICT ON UPDATE CASCADE
@@ -208,8 +210,9 @@ CREATE TABLE IF NOT EXISTS order_items (
     food_variant_id BIGINT UNSIGNED NULL,
     item_name VARCHAR(160) NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
-    quantity INT NOT NULL,
+    quantity INT UNSIGNED NOT NULL,
     line_total DECIMAL(10,2) NOT NULL,
+    customer_note VARCHAR(300) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY order_items_order_id_index (order_id),
     KEY order_items_food_item_id_index (food_item_id),
@@ -238,8 +241,33 @@ CREATE TABLE IF NOT EXISTS payments (
     amount DECIMAL(10,2) NOT NULL,
     method ENUM('cash', 'upi', 'card') NOT NULL,
     status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
+    transaction_reference VARCHAR(100) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY payments_order_id_index (order_id),
     CONSTRAINT payments_order_id_foreign FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 17. Table: review (reviews)
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT UNSIGNED NOT NULL,
+    restaurant_id BIGINT UNSIGNED NOT NULL,
+    order_id BIGINT UNSIGNED NULL,
+    food_item_id BIGINT UNSIGNED NULL,
+    restaurant_table_id BIGINT UNSIGNED NULL,
+    rating TINYINT UNSIGNED NOT NULL,
+    comment TEXT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY reviews_customer_id_index (customer_id),
+    KEY reviews_restaurant_id_index (restaurant_id),
+    KEY reviews_order_id_index (order_id),
+    KEY reviews_food_item_id_index (food_item_id),
+    KEY reviews_restaurant_table_id_index (restaurant_table_id),
+    CONSTRAINT reviews_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT reviews_restaurant_id_foreign FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT reviews_order_id_foreign FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT reviews_food_item_id_foreign FOREIGN KEY (food_item_id) REFERENCES food_items (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT reviews_restaurant_table_id_foreign FOREIGN KEY (restaurant_table_id) REFERENCES restaurant_tables (id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

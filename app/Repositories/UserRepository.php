@@ -48,8 +48,8 @@ final class UserRepository
     public function createOwner(string $name, string $email, string $passwordHash): int
     {
         $statement = Database::connection()->prepare(
-            'INSERT INTO users (name, email, password_hash, admin_id, status)
-             VALUES (:name, :email, :password_hash, 2, :status)'
+            'INSERT INTO users (name, email, password_hash, admin_id, role_id, status)
+             VALUES (:name, :email, :password_hash, 2, 2, :status)'
         );
         $statement->execute([
             'name' => $name,
@@ -75,7 +75,7 @@ final class UserRepository
         $statement = Database::connection()->prepare(
             'SELECT id, name, email, status, created_at
              FROM users
-             WHERE restaurant_id = :restaurant_id AND (admin_id = 3 OR admin_id = 4)
+             WHERE restaurant_id = :restaurant_id AND (admin_id = 3 OR admin_id = 4 OR role_id = 3 OR role_id = 4)
              ORDER BY name'
         );
         $statement->execute(['restaurant_id' => $restaurantId]);
@@ -85,8 +85,8 @@ final class UserRepository
     public function createStaff(int $restaurantId, string $name, string $email, string $passwordHash): int
     {
         $statement = Database::connection()->prepare(
-            'INSERT INTO users (restaurant_id, name, email, password_hash, admin_id, status)
-             VALUES (:restaurant_id, :name, :email, :password_hash, 4, "active")'
+            'INSERT INTO users (restaurant_id, name, email, password_hash, admin_id, role_id, status)
+             VALUES (:restaurant_id, :name, :email, :password_hash, 4, 4, "active")'
         );
         $statement->execute([
             'restaurant_id' => $restaurantId,

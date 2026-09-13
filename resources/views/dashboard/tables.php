@@ -129,22 +129,33 @@
                                     </div>
                                     
                                     <div class="border-top pt-3 mt-4">
-                                        <div class="d-flex justify-content-between align-items-center gap-2">
+                                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
                                             <span class="small text-muted d-flex align-items-center gap-1.5">
                                                 <i class="bi bi-qr-code-scan text-secondary"></i> QR: 
-                                                <?= (int)$t['token_count'] > 0 ? '<span class="badge bg-success-subtle text-success small">Active</span>' : '<span class="badge bg-light text-muted small">None</span>' ?>
+                                                <?= !empty($t['active_token']) ? '<span class="badge bg-success-subtle text-success small">Active</span>' : '<span class="badge bg-light text-muted small">None</span>' ?>
                                             </span>
                                             
                                             <form method="post" action="<?= e(url('/dashboard/tables/issue-qr')) ?>" class="d-inline">
                                                 <?= csrf_field() ?>
                                                 <input type="hidden" name="table_id" value="<?= e($t['id']) ?>">
                                                 <input type="hidden" name="table_name" value="<?= e($t['table_number'] ?? $t['table_name']) ?>">
-                                                <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" type="submit">
-                                                    <i class="bi bi-qr-code"></i> 
-                                                    <?= (int)$t['token_count'] > 0 ? 'Regenerate' : 'Generate' ?>
+                                                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" type="submit" title="Issue new QR session">
+                                                    <i class="bi bi-arrow-repeat"></i> 
+                                                    <?= !empty($t['active_token']) ? 'Re-issue' : 'Generate' ?>
                                                 </button>
                                             </form>
                                         </div>
+
+                                        <?php if (!empty($t['active_token'])): ?>
+                                            <div class="d-flex gap-2 mt-2">
+                                                <a href="<?= e(url('/menu?token=' . urlencode($t['active_token']))) ?>" target="_blank" class="btn btn-sm btn-outline-success flex-fill d-inline-flex align-items-center justify-content-center gap-1">
+                                                    <i class="bi bi-box-arrow-up-right"></i> Open Menu
+                                                </a>
+                                                <a href="<?= e(url('/dashboard/tables/print-qr?token=' . urlencode($t['active_token']) . '&table=' . urlencode($t['table_number'] ?? $t['table_name']))) ?>" target="_blank" class="btn btn-sm btn-success flex-fill d-inline-flex align-items-center justify-content-center gap-1">
+                                                    <i class="bi bi-printer"></i> Print Standee
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </article>
                             </div>

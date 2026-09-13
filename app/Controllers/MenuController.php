@@ -60,15 +60,27 @@ final class MenuController extends Controller
         }
 
         View::render('menu/index', [
-            'title' => $context['restaurant_name'] . ' - Digital Menu',
+            'title' => $context['restaurant_name'] . ' — Digital Menu',
+            'restaurant' => [
+                'name' => $context['restaurant_name'],
+                'cuisine' => !empty($context['cuisine_type']) ? $context['cuisine_type'] : 'Multi-Cuisine',
+                'description' => !empty($context['restaurant_description']) ? $context['restaurant_description'] : 'Delightful food freshly prepared with high quality ingredients.',
+                'phone' => $context['restaurant_phone'] ?? '',
+                'address' => $context['restaurant_address'] ?? '',
+                'city' => $context['restaurant_city'] ?? '',
+                'rating' => $context['avg_rating'] ?? 4.9,
+                'reviews_count' => $context['total_reviews'] ?? 124,
+                'is_open' => true,
+            ],
             'restaurantName' => $context['restaurant_name'],
             'tableName' => $context['table_number'] ?? 'Table',
             'categories' => $categories,
             'groupedFoods' => $groupedFoods,
+            'foods' => $foods,
             'token' => $token,
             'success' => Flash::get('success'),
             'error' => Flash::get('error'),
-        ], 'auth'); // Use 'auth' layout since it is minimal and standalone
+        ], 'menu');
     }
 
     public function checkout(): void
@@ -88,23 +100,49 @@ final class MenuController extends Controller
             $this->redirect('/');
         }
 
-        $quantities = $_POST['quantities'] ?? [];
-        $selectedVariants = $_POST['variants'] ?? [];
-        $selectedCustomizations = $_POST['customizations'] ?? [];
         $note = trim((string) ($_POST['note'] ?? ''));
         $customerName = trim((string) ($_POST['customer_name'] ?? ''));
         $customerPhone = trim((string) ($_POST['customer_phone'] ?? ''));
         $cart = [];
 
-        foreach ($quantities as $foodIdStr => $qtyStr) {
-            $qty = (int) $qtyStr;
-            if ($qty > 0) {
-                $foodId = (int) $foodIdStr;
-                $cart[$foodId] = [
-                    'quantity' => $qty,
-                    'variant_id' => !empty($selectedVariants[$foodId]) ? (int) $selectedVariants[$foodId] : null,
-                    'customization_ids' => !empty($selectedCustomizations[$foodId]) ? array_map('intval', (array) $selectedCustomizations[$foodId]) : []
-                ];
+        // Check if JSON cart payload is submitted (from dynamic cart drawer)
+        $cartJson = trim((string) ($_POST['cart_json'] ?? ''));
+        if ($cartJson !== '') {
+            $decodedCart = json_decode($cartJson, true);
+            if (is_array($decodedCart)) {
+                foreach ($decodedCart as $item) {
+                    $qty = (int) ($item['quantity'] ?? 0);
+                    $fId = (int) ($item['food_id'] ?? 0);
+                    if ($qty > 0 && $fId > 0) {
+                        $cart[] = [
+                            'food_id' => $fId,
+                            'quantity' => $qty,
+                            'variant_id' => !empty($item['variant_id']) ? (int) $item['variant_id'] : null,
+                            'customization_ids' => !empty($item['customization_ids']) ? array_map('intval', (array) $item['customization_ids']) : [],
+                            'note' => !empty($item['note']) ? trim((string) $item['note']) : null
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Fallback to classic form post if cart_json wasn't used
+        if ($cart === []) {
+            $quantities = $_POST['quantities'] ?? [];
+            $selectedVariants = $_POST['variants'] ?? [];
+            $selectedCustomizations = $_POST['customizations'] ?? [];
+
+            foreach ($quantities as $foodIdStr => $qtyStr) {
+                $qty = (int) $qtyStr;
+                if ($qty > 0) {
+                    $foodId = (int) $foodIdStr;
+                    $cart[] = [
+                        'food_id' => $foodId,
+                        'quantity' => $qty,
+                        'variant_id' => !empty($selectedVariants[$foodId]) ? (int) $selectedVariants[$foodId] : null,
+                        'customization_ids' => !empty($selectedCustomizations[$foodId]) ? array_map('intval', (array) $selectedCustomizations[$foodId]) : []
+                    ];
+                }
             }
         }
 
@@ -156,16 +194,17 @@ final class MenuController extends Controller
             return;
         }
 
-        // Fetch items details for order summary
-        $db = \App\Core\Database::connection();
-        $stmt = $db->prepare('SELECT food_item_id, item_name, unit_price, quantity, line_total FROM order_items WHERE order_id = :order_id');
-        $stmt->execute(['order_id' => $orderId]);
-        $items = $stmt->fetchAll();
-
+        // Fetch itemized details including variants and customizations
+        $items = $this->mvpRepository->orderItemsWithDetails($orderId);
         $payment = $this->mvpRepository->paymentForOrder($orderId);
 
         View::render('menu/order_status', [
             'title' => 'Track Order #' . $order['order_number'],
+            'restaurant' => [
+                'name' => $context['restaurant_name'],
+                'cuisine' => !empty($context['cuisine_type']) ? $context['cuisine_type'] : 'Multi-Cuisine',
+                'description' => $context['restaurant_description'] ?? '',
+            ],
             'restaurantName' => $context['restaurant_name'],
             'tableName' => $context['table_number'] ?? 'Table',
             'order' => $order,
@@ -174,7 +213,7 @@ final class MenuController extends Controller
             'payment' => $payment,
             'success' => Flash::get('success'),
             'error' => Flash::get('error'),
-        ], 'auth');
+        ], 'menu');
     }
 
     public function pollStatus(): void

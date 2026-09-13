@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Bite – Sample Database Records</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            color: #111111;
+            line-height: 1.45;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 30px 15px;
+        }
+        .paper-container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 50px 60px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+        h1 {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #000000;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 18px;
+        }
+        h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin-top: 22px;
+            margin-bottom: 6px;
+        }
+        p {
+            font-size: 10.5pt;
+            text-align: justify;
+            margin-bottom: 10px;
+        }
+        .intro-box {
+            background-color: #f8fafc;
+            border-left: 3px solid #2b6cb0;
+            padding: 10px 15px;
+            font-size: 10pt;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 22px;
+            font-size: 9pt;
+        }
+        th, td {
+            border: 1px solid #cbd5e0;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #ebf8ff;
+            font-weight: bold;
+            color: #2c5282;
+        }
+        tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        .code-font {
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 8.5pt;
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .paper-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="paper-container">
+    <h1>Sample Database Records (Demo Dataset)</h1>
+    
+    <div class="intro-box">
+        This document provides the complete set of sample database records for all <strong>17 tables</strong> of <strong>Healthy Bite – Digital Menu &amp; Food Ordering System</strong>. All records are safe, fictional demo entries that strictly maintain relational consistency across foreign keys.
+    </div>
+
+    <!-- 1. Admin -->
+    <h3>1. Admin – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Platform Super Admin</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Tenant Administrator</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 2. Roles -->
+    <h3>2. Roles – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>slug</th>
+                <th>description</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Super Admin</td>
+                <td>super_admin</td>
+                <td>Full platform access and system control</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Restaurant Owner</td>
+                <td>owner</td>
+                <td>Restaurant administrator with full branch control</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Staff</td>
+                <td>staff</td>
+                <td>Kitchen and order service operations</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 3. Users -->
+    <h3>3. Users – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>admin_id</th>
+                <th>role_id</th>
+                <th>restaurant_id</th>
+                <th>name</th>
+                <th>email</th>
+                <th>password_hash</th>
+                <th>status</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>NULL</td>
+                <td>Demo Admin</td>
+                <td>admin@healthybite.test</td>
+                <td>[HASHED_PASSWORD]</td>
+                <td>active</td>
+                <td>2026-08-01 10:00:00</td>
+                <td>2026-08-01 10:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>2</td>
+                <td>1</td>
+                <td>Demo Owner</td>
+                <td>owner@healthybite.test</td>
+                <td>[HASHED_PASSWORD]</td>
+                <td>active</td>
+                <td>2026-08-02 11:30:00</td>
+                <td>2026-08-02 11:30:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>NULL</td>
+                <td>3</td>
+                <td>1</td>
+                <td>Demo Staff</td>
+                <td>staff@healthybite.test</td>
+                <td>[HASHED_PASSWORD]</td>
+                <td>active</td>
+                <td>2026-08-03 14:00:00</td>
+                <td>2026-08-03 14:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 4. Restaurants -->
+    <h3>4. Restaurants – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>owner_user_id</th>
+                <th>name</th>
+                <th>email</th>
+                <th>phone</th>
+                <th>address</th>
+                <th>city</th>
+                <th>state</th>
+                <th>cuisine_type</th>
+                <th>description</th>
+                <th>approval_status</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>Healthy Bite Demo Restaurant</td>
+                <td>restaurant@healthybite.test</td>
+                <td>9000000000</td>
+                <td>123 Green Avenue</td>
+                <td>San Francisco</td>
+                <td>CA</td>
+                <td>Organic &amp; Healthy</td>
+                <td>Fresh farm-to-table organic meals and juices.</td>
+                <td>approved</td>
+                <td>2026-08-02 11:30:00</td>
+                <td>2026-08-02 11:30:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 5. Branches -->
+    <h3>5. Branches – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>restaurant_id</th>
+                <th>name</th>
+                <th>phone</th>
+                <th>address</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Downtown Main Branch</td>
+                <td>9000000001</td>
+                <td>123 Green Avenue, Downtown</td>
+                <td>2026-08-02 12:00:00</td>
+                <td>2026-08-02 12:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Uptown Express Outlet</td>
+                <td>9000000002</td>
+                <td>456 Wellness Boulevard, Uptown</td>
+                <td>2026-08-05 09:00:00</td>
+                <td>2026-08-05 09:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 6. Categories -->
+    <h3>6. Categories – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>restaurant_id</th>
+                <th>name</th>
+                <th>sort_order</th>
+                <th>is_active</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Salads &amp; Bowls</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2026-08-02 12:30:00</td>
+                <td>2026-08-02 12:30:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Fresh Smoothies</td>
+                <td>2</td>
+                <td>1</td>
+                <td>2026-08-02 12:30:00</td>
+                <td>2026-08-02 12:30:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>1</td>
+                <td>Warm Grain Bowls</td>
+                <td>3</td>
+                <td>1</td>
+                <td>2026-08-02 12:30:00</td>
+                <td>2026-08-02 12:30:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 7. Food Items -->
+    <h3>7. Food Items – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>category_id</th>
+                <th>name</th>
+                <th>description</th>
+                <th>base_price</th>
+                <th>calories</th>
+                <th>protein</th>
+                <th>carbs</th>
+                <th>fat</th>
+                <th>fiber_g</th>
+                <th>sugar_g</th>
+                <th>allergens</th>
+                <th>food_type</th>
+                <th>is_available</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Greek Quinoa Crunch Salad</td>
+                <td>Fresh cucumbers, tomatoes, kalamata olives, quinoa, and feta.</td>
+                <td>12.50</td>
+                <td>340</td>
+                <td>12.50</td>
+                <td>28.00</td>
+                <td>16.00</td>
+                <td>6.50</td>
+                <td>4.00</td>
+                <td>Dairy</td>
+                <td>veg</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>Green Detox Glow Smoothie</td>
+                <td>Cold-pressed kale, green apple, ginger, cucumber, and chia.</td>
+                <td>7.50</td>
+                <td>180</td>
+                <td>4.00</td>
+                <td>34.00</td>
+                <td>1.50</td>
+                <td>5.00</td>
+                <td>18.00</td>
+                <td>None</td>
+                <td>vegan</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>3</td>
+                <td>Roasted Tofu Harvest Bowl</td>
+                <td>Organic baked tofu with roasted sweet potato and broccoli.</td>
+                <td>14.00</td>
+                <td>450</td>
+                <td>22.00</td>
+                <td>52.00</td>
+                <td>14.00</td>
+                <td>8.00</td>
+                <td>5.50</td>
+                <td>Soy, Sesame</td>
+                <td>vegan</td>
+                <td>1</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 8. Food Variants -->
+    <h3>8. Food Variants – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>food_item_id</th>
+                <th>name</th>
+                <th>price_adjustment</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Regular Bowl</td>
+                <td>0.00</td>
+                <td>2026-08-02 14:00:00</td>
+                <td>2026-08-02 14:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Large Power Bowl</td>
+                <td>3.50</td>
+                <td>2026-08-02 14:00:00</td>
+                <td>2026-08-02 14:00:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>2</td>
+                <td>Mega Booster (650ml)</td>
+                <td>2.50</td>
+                <td>2026-08-02 14:05:00</td>
+                <td>2026-08-02 14:05:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 9. Food Customizations -->
+    <h3>9. Food Customizations – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>food_item_id</th>
+                <th>name</th>
+                <th>price_adjustment</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Extra Avocado Slice</td>
+                <td>2.00</td>
+                <td>2026-08-02 14:10:00</td>
+                <td>2026-08-02 14:10:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Organic Crumbled Feta</td>
+                <td>1.50</td>
+                <td>2026-08-02 14:10:00</td>
+                <td>2026-08-02 14:10:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>3</td>
+                <td>Extra Tahini Drizzle</td>
+                <td>1.00</td>
+                <td>2026-08-02 14:20:00</td>
+                <td>2026-08-02 14:20:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 10. Restaurant Tables -->
+    <h3>10. Restaurant Tables – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>branch_id</th>
+                <th>table_number</th>
+                <th>capacity</th>
+                <th>status</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>T-01</td>
+                <td>4</td>
+                <td>available</td>
+                <td>2026-08-02 15:00:00</td>
+                <td>2026-08-02 15:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>T-02</td>
+                <td>2</td>
+                <td>occupied</td>
+                <td>2026-08-02 15:00:00</td>
+                <td>2026-08-02 15:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 11. QR Tokens -->
+    <h3>11. QR Tokens – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>restaurant_table_id</th>
+                <th>token</th>
+                <th>expires_at</th>
+                <th>is_active</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>hb_tok_9f82a1d04b9e28</td>
+                <td>NULL</td>
+                <td>1</td>
+                <td>2026-08-02 15:30:00</td>
+                <td>2026-08-02 15:30:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>hb_tok_6c11e48b70f4a3</td>
+                <td>NULL</td>
+                <td>1</td>
+                <td>2026-08-02 15:30:00</td>
+                <td>2026-08-02 15:30:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 12. Customers -->
+    <h3>12. Customers – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>phone</th>
+                <th>email</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Sophia Chen</td>
+                <td>9876543210</td>
+                <td>sophia.c@example.test</td>
+                <td>2026-08-10 12:15:00</td>
+                <td>2026-08-10 12:15:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Liam Thorne</td>
+                <td>9876543211</td>
+                <td>liam.thorne@example.test</td>
+                <td>2026-08-10 13:05:00</td>
+                <td>2026-08-10 13:05:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 13. Orders -->
+    <h3>13. Orders – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>branch_id</th>
+                <th>customer_id</th>
+                <th>restaurant_table_id</th>
+                <th>order_number</th>
+                <th>status</th>
+                <th>customer_note</th>
+                <th>subtotal</th>
+                <th>tax_amount</th>
+                <th>total_amount</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>HB-20260810-001</td>
+                <td>completed</td>
+                <td>Dressing on the side please.</td>
+                <td>20.00</td>
+                <td>1.00</td>
+                <td>21.00</td>
+                <td>2026-08-10 12:20:00</td>
+                <td>2026-08-10 12:45:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>2</td>
+                <td>1</td>
+                <td>HB-20260810-002</td>
+                <td>preparing</td>
+                <td>No ice in smoothie.</td>
+                <td>21.50</td>
+                <td>1.08</td>
+                <td>22.58</td>
+                <td>2026-08-10 13:10:00</td>
+                <td>2026-08-10 13:12:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 14. Order Items -->
+    <h3>14. Order Items – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>order_id</th>
+                <th>food_item_id</th>
+                <th>food_variant_id</th>
+                <th>item_name</th>
+                <th>unit_price</th>
+                <th>quantity</th>
+                <th>line_total</th>
+                <th>customer_note</th>
+                <th>created_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>Greek Quinoa Crunch Salad (Large Power Bowl)</td>
+                <td>16.00</td>
+                <td>1</td>
+                <td>18.00</td>
+                <td>Extra dressing container</td>
+                <td>2026-08-10 12:20:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>2</td>
+                <td>NULL</td>
+                <td>Green Detox Glow Smoothie</td>
+                <td>7.50</td>
+                <td>1</td>
+                <td>7.50</td>
+                <td>NULL</td>
+                <td>2026-08-10 12:20:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>2</td>
+                <td>3</td>
+                <td>NULL</td>
+                <td>Roasted Tofu Harvest Bowl</td>
+                <td>14.00</td>
+                <td>1</td>
+                <td>15.00</td>
+                <td>Warm bowl please</td>
+                <td>2026-08-10 13:10:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 15. Order Item Customizations -->
+    <h3>15. Order Item Customizations – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>order_item_id</th>
+                <th>food_customization_id</th>
+                <th>created_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2026-08-10 12:20:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>3</td>
+                <td>3</td>
+                <td>2026-08-10 13:10:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 16. Payments -->
+    <h3>16. Payments – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>order_id</th>
+                <th>amount</th>
+                <th>method</th>
+                <th>status</th>
+                <th>transaction_reference</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>21.00</td>
+                <td>upi</td>
+                <td>completed</td>
+                <td>UPI-TXN-20260810-9842</td>
+                <td>2026-08-10 12:45:00</td>
+                <td>2026-08-10 12:45:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>22.58</td>
+                <td>card</td>
+                <td>pending</td>
+                <td>CARD-AUTH-90214</td>
+                <td>2026-08-10 13:10:00</td>
+                <td>2026-08-10 13:10:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 17. Reviews -->
+    <h3>17. Reviews – Sample Records:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>customer_id</th>
+                <th>restaurant_id</th>
+                <th>order_id</th>
+                <th>food_item_id</th>
+                <th>restaurant_table_id</th>
+                <th>rating</th>
+                <th>comment</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>5</td>
+                <td>The Greek Quinoa Salad with extra avocado was exceptionally fresh and filling!</td>
+                <td>2026-08-10 13:00:00</td>
+                <td>2026-08-10 13:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,10 +1,19 @@
 <div class="row align-items-center mb-4 g-3">
-    <div class="col-md-8">
+    <div class="col-md-7">
         <div class="page-title-section">
             <span class="page-pretitle">Kitchen Panel</span>
             <h1 class="h2 mb-1">Live Kitchen Queue</h1>
             <p class="text-secondary mb-0">Monitor and update customer orders, chef prep timers, and table service status in real time.</p>
         </div>
+    </div>
+    <div class="col-md-5 text-md-end d-flex align-items-center justify-content-md-end gap-2">
+        <button type="button" id="toggle-autorefresh" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 active">
+            <span class="badge-pulse-green"></span>
+            Auto-Refresh: <strong id="autorefresh-label">10s (ON)</strong>
+        </button>
+        <a href="<?= e(url('/dashboard/orders')) ?>" class="btn btn-sm btn-light border rounded-pill px-3 py-1.5" title="Refresh Now">
+            <i class="bi bi-arrow-clockwise"></i>
+        </a>
     </div>
 </div>
 
@@ -89,9 +98,33 @@
                                         <!-- Items List -->
                                         <div class="mb-3">
                                             <h4 class="h6 text-secondary fw-semibold mb-2" style="font-size: 0.75rem;">Items ordered:</h4>
-                                            <div class="fw-bold text-dark fs-6" style="line-height: 1.5; white-space: pre-line;">
-                                                <?= e(str_replace(', ', "\n• ", "• " . $o['items'])) ?>
-                                            </div>
+                                            <?php if (!empty($o['order_items'])): ?>
+                                                <div class="d-flex flex-column gap-2">
+                                                    <?php foreach ($o['order_items'] as $oi): ?>
+                                                        <div class="p-2.5 rounded-3 bg-light border">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <span class="fw-bold text-dark fs-6"><?= e($oi['quantity']) ?> × <?= e($oi['item_name']) ?></span>
+                                                                <span class="small text-muted fw-semibold">&#8377;<?= e(number_format((float)$oi['line_total'], 2)) ?></span>
+                                                            </div>
+                                                            <?php if (!empty($oi['variant_name'])): ?>
+                                                                <span class="badge bg-secondary-subtle text-secondary small mt-0.5" style="font-size: 0.7rem;"><?= e($oi['variant_name']) ?></span>
+                                                            <?php endif; ?>
+                                                            <?php if (!empty($oi['customization_names'])): ?>
+                                                                <div class="small text-muted mt-0.5" style="font-size: 0.75rem;">+ <?= e($oi['customization_names']) ?></div>
+                                                            <?php endif; ?>
+                                                            <?php if (!empty($oi['customer_note'])): ?>
+                                                                <div class="small text-warning-emphasis bg-warning-subtle px-2 py-0.5 rounded mt-1" style="font-size: 0.72rem;">
+                                                                    <i class="bi bi-chat-dots me-1"></i><?= e($oi['customer_note']) ?>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="fw-bold text-dark fs-6" style="line-height: 1.5; white-space: pre-line;">
+                                                    <?= e(str_replace(', ', "\n• ", "• " . $o['items'])) ?>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
 
                                         <!-- Customer Notes -->
@@ -215,7 +248,6 @@
                                             </span>
                                         </td>
                                     </tr>
-                                <?php foreach ($archivedOrders as $o) {} ?>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -226,16 +258,58 @@
     </div>
 </div>
 
-<!-- Auto refresh active queue every 10 seconds -->
+<style>
+.badge-pulse-green {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #059669;
+    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7);
+    animation: pulse 1.8s infinite;
+    display: inline-block;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+}
+</style>
+
+<!-- Auto Refresh Active Queue with Toggle -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const activeTab = document.getElementById('active-orders-tab');
-    
-    // Set timer to reload only when viewing Active Queue tab
-    const autoReloader = setInterval(function() {
-        if (activeTab.classList.contains('active')) {
-            window.location.reload();
-        }
-    }, 10000);
+    const toggleBtn = document.getElementById('toggle-autorefresh');
+    const label = document.getElementById('autorefresh-label');
+    let autoRefreshEnabled = true;
+    let timer = null;
+
+    function startTimer() {
+        if (timer) clearInterval(timer);
+        timer = setInterval(function() {
+            if (autoRefreshEnabled && activeTab && activeTab.classList.contains('active')) {
+                window.location.reload();
+            }
+        }, 10000);
+    }
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            autoRefreshEnabled = !autoRefreshEnabled;
+            if (autoRefreshEnabled) {
+                toggleBtn.classList.add('active');
+                toggleBtn.classList.replace('btn-outline-secondary', 'btn-outline-success');
+                label.textContent = '10s (ON)';
+                startTimer();
+            } else {
+                toggleBtn.classList.remove('active');
+                toggleBtn.classList.replace('btn-outline-success', 'btn-outline-secondary');
+                label.textContent = 'PAUSED';
+                if (timer) clearInterval(timer);
+            }
+        });
+    }
+
+    startTimer();
 });
 </script>

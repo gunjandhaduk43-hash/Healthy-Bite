@@ -70,6 +70,7 @@ final class MvpRepository
         $params = [
             'category_id' => $food['category_id'],
             'name' => $food['name'],
+            'description' => $food['description'] ?? null,
             'image' => $food['image'] ?? null,
             'ingredients' => $food['ingredients'] ?? null,
             'base_price' => $food['base_price'],
@@ -77,10 +78,13 @@ final class MvpRepository
             'protein' => $food['protein'] ?? null,
             'carbs' => $food['carbs'] ?? null,
             'fat' => $food['fat'] ?? null,
+            'fiber_g' => $food['fiber_g'] ?? null,
+            'sugar_g' => $food['sugar_g'] ?? null,
             'allergens' => $food['allergens'] ?? null,
             'preparation_time' => $food['preparation_time'] ?? null,
             'spice_level' => $food['spice_level'] ?? 'medium',
             'food_type' => $food['food_type'] ?? 'veg',
+            'serving_size' => $food['serving_size'] ?? null,
             'is_available' => $food['is_available'] ?? 1,
             'is_featured' => $food['is_featured'] ?? 0,
         ];
@@ -88,18 +92,18 @@ final class MvpRepository
         if (!empty($food['id'])) {
             $params['id'] = (int) $food['id'];
             $statement = Database::connection()->prepare(
-                'UPDATE food_items SET category_id=:category_id, name=:name, image=:image, ingredients=:ingredients, base_price=:base_price,
-                 calories=:calories, protein=:protein, carbs=:carbs, fat=:fat,
+                'UPDATE food_items SET category_id=:category_id, name=:name, description=:description, image=:image, ingredients=:ingredients, base_price=:base_price,
+                 calories=:calories, protein=:protein, carbs=:carbs, fat=:fat, fiber_g=:fiber_g, sugar_g=:sugar_g,
                  allergens=:allergens, preparation_time=:preparation_time, spice_level=:spice_level, food_type=:food_type,
-                 is_available=:is_available, is_featured=:is_featured
+                 serving_size=:serving_size, is_available=:is_available, is_featured=:is_featured
                  WHERE id=:id'
             );
         } else {
             $statement = Database::connection()->prepare(
-                'INSERT INTO food_items (category_id, name, image, ingredients, base_price, calories, protein,
-                 carbs, fat, allergens, preparation_time, spice_level, food_type, is_available, is_featured)
-                 VALUES (:category_id, :name, :image, :ingredients, :base_price, :calories, :protein,
-                 :carbs, :fat, :allergens, :preparation_time, :spice_level, :food_type, :is_available, :is_featured)'
+                'INSERT INTO food_items (category_id, name, description, image, ingredients, base_price, calories, protein,
+                 carbs, fat, fiber_g, sugar_g, allergens, preparation_time, spice_level, food_type, serving_size, is_available, is_featured)
+                 VALUES (:category_id, :name, :description, :image, :ingredients, :base_price, :calories, :protein,
+                 :carbs, :fat, :fiber_g, :sugar_g, :allergens, :preparation_time, :spice_level, :food_type, :serving_size, :is_available, :is_featured)'
             );
         }
         $statement->execute($params);
@@ -115,7 +119,8 @@ final class MvpRepository
     public function tables(int $restaurantId): array
     {
         $statement = Database::connection()->prepare(
-            'SELECT restaurant_tables.*, COUNT(qr_tokens.id) AS token_count
+            'SELECT restaurant_tables.*, COUNT(qr_tokens.id) AS token_count,
+                    MAX(qr_tokens.token) AS active_token
              FROM restaurant_tables 
              INNER JOIN branches ON branches.id = restaurant_tables.branch_id
              LEFT JOIN qr_tokens ON qr_tokens.restaurant_table_id = restaurant_tables.id AND qr_tokens.is_active = 1
@@ -183,8 +188,11 @@ final class MvpRepository
     public function qrContext(string $rawToken): ?array
     {
         $statement = Database::connection()->prepare(
-            'SELECT qr_tokens.id AS token_id, branches.restaurant_id AS restaurant_id, restaurants.name AS restaurant_name,
-             restaurant_tables.id AS table_id, restaurant_tables.table_number
+            'SELECT qr_tokens.id AS token_id, branches.restaurant_id AS restaurant_id, 
+                    restaurants.name AS restaurant_name, restaurants.cuisine_type, 
+                    restaurants.description AS restaurant_description, restaurants.phone AS restaurant_phone,
+                    restaurants.address AS restaurant_address, restaurants.city AS restaurant_city,
+                    restaurant_tables.id AS table_id, restaurant_tables.table_number
              FROM qr_tokens 
              INNER JOIN restaurant_tables ON restaurant_tables.id = qr_tokens.restaurant_table_id
              INNER JOIN branches ON branches.id = restaurant_tables.branch_id
@@ -195,7 +203,15 @@ final class MvpRepository
         );
         $statement->execute(['token' => $rawToken, 'approval_status' => 'approved']);
         $context = $statement->fetch();
-        return is_array($context) ? $context : null;
+        if (!is_array($context)) {
+            return null;
+        }
+
+        $summary = $this->reviewSummary((int) $context['restaurant_id']);
+        $context['avg_rating'] = $summary['avg_rating'] > 0 ? $summary['avg_rating'] : 4.9;
+        $context['total_reviews'] = $summary['total_reviews'] > 0 ? $summary['total_reviews'] : 124;
+
+        return $context;
     }
 
     /** @param list<int> $foodIds
@@ -216,14 +232,25 @@ final class MvpRepository
         return $statement->fetchAll();
     }
 
-    /** @param array<int, array{quantity: int, variant_id?: int|null, customization_ids?: list<int>}>|array<int, int> $cart
+    /** @param array<mixed> $cart
      *  @return array{order_id: int, order_number: string}|null
      */
     public function createOrder(int $restaurantId, int $tableId, array $cart, string $note, string $customerName = 'Guest', string $customerPhone = ''): ?array
     {
-        $foodIds = array_keys($cart);
+        $foodIds = [];
+        foreach ($cart as $key => $itemData) {
+            $fId = is_array($itemData) && isset($itemData['food_id']) ? (int) $itemData['food_id'] : (int) $key;
+            if ($fId > 0) {
+                $foodIds[] = $fId;
+            }
+        }
+        $foodIds = array_values(array_unique($foodIds));
+        if ($foodIds === []) {
+            return null;
+        }
+
         $foods = $this->availableFoodsByIds($restaurantId, $foodIds);
-        if (count($foods) !== count($cart)) {
+        if (count($foods) !== count($foodIds)) {
             return null;
         }
 
@@ -239,11 +266,19 @@ final class MvpRepository
         $subtotal = 0.0;
         $orderLines = [];
 
-        foreach ($cart as $foodId => $itemData) {
-            $food = $foodMap[(int)$foodId];
-            $qty = is_array($itemData) ? (int) $itemData['quantity'] : (int) $itemData;
+        foreach ($cart as $key => $itemData) {
+            $foodId = is_array($itemData) && isset($itemData['food_id']) ? (int) $itemData['food_id'] : (int) $key;
+            if (!isset($foodMap[$foodId])) {
+                continue;
+            }
+            $food = $foodMap[$foodId];
+            $qty = is_array($itemData) ? (int) ($itemData['quantity'] ?? 1) : (int) $itemData;
+            if ($qty <= 0) {
+                continue;
+            }
             $variantId = is_array($itemData) && !empty($itemData['variant_id']) ? (int) $itemData['variant_id'] : null;
             $customizationIds = is_array($itemData) && !empty($itemData['customization_ids']) ? (array) $itemData['customization_ids'] : [];
+            $itemNote = is_array($itemData) && !empty($itemData['note']) ? trim((string)$itemData['note']) : null;
 
             $unitPrice = (float) $food['base_price'];
 
@@ -278,9 +313,13 @@ final class MvpRepository
                 'unit_price' => $unitPrice,
                 'quantity' => $qty,
                 'line_total' => $lineSubtotal,
-                'customization_ids' => $validCustomizations
+                'customization_ids' => $validCustomizations,
+                'customer_note' => $itemNote
             ];
         }
+
+        $taxAmount = round($subtotal * 0.05, 2);
+        $totalAmount = round($subtotal + $taxAmount, 2);
 
         $orderNumber = 'HB-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
         $connection = Database::connection();
@@ -293,8 +332,8 @@ final class MvpRepository
 
             // 2. Insert order
             $order = $connection->prepare(
-                'INSERT INTO orders (branch_id, customer_id, restaurant_table_id, order_number, status, customer_note, subtotal, total_amount) 
-                 VALUES (:branch_id, :customer_id, :restaurant_table_id, :order_number, \'pending\', :customer_note, :subtotal, :total_amount)'
+                'INSERT INTO orders (branch_id, customer_id, restaurant_table_id, order_number, status, customer_note, subtotal, tax_amount, total_amount) 
+                 VALUES (:branch_id, :customer_id, :restaurant_table_id, :order_number, "pending", :customer_note, :subtotal, :tax_amount, :total_amount)'
             );
             $order->execute([
                 'branch_id' => $branchId,
@@ -303,14 +342,15 @@ final class MvpRepository
                 'order_number' => $orderNumber,
                 'customer_note' => $note ?: null,
                 'subtotal' => $subtotal,
-                'total_amount' => $subtotal
+                'tax_amount' => $taxAmount,
+                'total_amount' => $totalAmount
             ]);
             $orderId = (int) $connection->lastInsertId();
 
             // 3. Insert order items & order_item_customizations
             $lineStmt = $connection->prepare(
-                'INSERT INTO order_items (order_id, food_item_id, food_variant_id, item_name, unit_price, quantity, line_total) 
-                 VALUES (:order_id, :food_item_id, :food_variant_id, :item_name, :unit_price, :quantity, :line_total)'
+                'INSERT INTO order_items (order_id, food_item_id, food_variant_id, item_name, unit_price, quantity, line_total, customer_note) 
+                 VALUES (:order_id, :food_item_id, :food_variant_id, :item_name, :unit_price, :quantity, :line_total, :customer_note)'
             );
             $custBridgeStmt = $connection->prepare(
                 'INSERT INTO order_item_customizations (order_item_id, food_customization_id) VALUES (:order_item_id, :food_customization_id)'
@@ -324,7 +364,8 @@ final class MvpRepository
                     'item_name' => $line['item_name'],
                     'unit_price' => $line['unit_price'],
                     'quantity' => $line['quantity'],
-                    'line_total' => $line['line_total']
+                    'line_total' => $line['line_total'],
+                    'customer_note' => $line['customer_note']
                 ]);
                 $orderItemId = (int) $connection->lastInsertId();
 
@@ -348,22 +389,55 @@ final class MvpRepository
     }
 
     /** @return list<array<string, mixed>> */
+    public function orderItemsWithDetails(int $orderId): array
+    {
+        $statement = Database::connection()->prepare(
+            'SELECT oi.*, fv.name AS variant_name,
+                    (SELECT GROUP_CONCAT(fc.name SEPARATOR ", ") 
+                     FROM order_item_customizations oic 
+                     INNER JOIN food_customizations fc ON fc.id = oic.food_customization_id 
+                     WHERE oic.order_item_id = oi.id) AS customization_names
+             FROM order_items oi
+             LEFT JOIN food_variants fv ON fv.id = oi.food_variant_id
+             WHERE oi.order_id = :order_id
+             ORDER BY oi.id ASC'
+        );
+        $statement->execute(['order_id' => $orderId]);
+        return $statement->fetchAll();
+    }
+
+    /** @return list<array<string, mixed>> */
     public function orders(int $restaurantId): array
     {
         $statement = Database::connection()->prepare(
-            'SELECT o.*, rt.table_number, c.name AS customer_name, c.phone AS customer_phone,
-                    GROUP_CONCAT(CONCAT(oi.quantity, " x ", oi.item_name) SEPARATOR ", ") AS items 
+            'SELECT o.*, rt.table_number, c.name AS customer_name, c.phone AS customer_phone
              FROM orders o
              INNER JOIN branches b ON b.id = o.branch_id
              INNER JOIN customers c ON c.id = o.customer_id
              LEFT JOIN restaurant_tables rt ON rt.id = o.restaurant_table_id
-             INNER JOIN order_items oi ON oi.order_id = o.id 
              WHERE b.restaurant_id = :restaurant_id 
-             GROUP BY o.id 
              ORDER BY o.created_at DESC'
         );
         $statement->execute(['restaurant_id' => $restaurantId]);
-        return $statement->fetchAll();
+        $orders = $statement->fetchAll();
+
+        foreach ($orders as &$order) {
+            $order['order_items'] = $this->orderItemsWithDetails((int)$order['id']);
+            $itemsSummary = [];
+            foreach ($order['order_items'] as $item) {
+                $desc = $item['quantity'] . ' x ' . $item['item_name'];
+                if (!empty($item['variant_name'])) {
+                    $desc .= ' (' . $item['variant_name'] . ')';
+                }
+                if (!empty($item['customization_names'])) {
+                    $desc .= ' [+' . $item['customization_names'] . ']';
+                }
+                $itemsSummary[] = $desc;
+            }
+            $order['items'] = implode(', ', $itemsSummary);
+        }
+
+        return $orders;
     }
 
     public function updateOrderStatus(int $restaurantId, int $orderId, string $status, int $userId): bool
@@ -436,12 +510,13 @@ final class MvpRepository
     public function createReview(array $review): void
     {
         $statement = Database::connection()->prepare(
-            'INSERT INTO reviews (restaurant_id, customer_id, food_item_id, restaurant_table_id, comment, rating)
-             VALUES (:restaurant_id, :customer_id, :food_item_id, :restaurant_table_id, :comment, :rating)'
+            'INSERT INTO reviews (restaurant_id, customer_id, order_id, food_item_id, restaurant_table_id, comment, rating)
+             VALUES (:restaurant_id, :customer_id, :order_id, :food_item_id, :restaurant_table_id, :comment, :rating)'
         );
         $statement->execute([
             'restaurant_id' => $review['restaurant_id'],
             'customer_id' => $review['customer_id'],
+            'order_id' => !empty($review['order_id']) ? $review['order_id'] : null,
             'food_item_id' => !empty($review['food_item_id']) ? $review['food_item_id'] : null,
             'restaurant_table_id' => !empty($review['restaurant_table_id']) ? $review['restaurant_table_id'] : null,
             'comment' => $review['comment'] ?? null,

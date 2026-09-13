@@ -90,27 +90,57 @@
                     <?php endif; ?>
 
                     <div class="text-start border-top pt-4">
-                        <h3 class="h6 fw-bold mb-3 text-secondary text-uppercase" style="letter-spacing: 0.05em;">Order Items</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h6 fw-bold text-secondary text-uppercase mb-0" style="letter-spacing: 0.05em;">Order Items</h3>
+                            <a href="<?= e(url('/menu?token=' . $token)) ?>" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                                <i class="bi bi-plus-lg me-1"></i> Order More
+                            </a>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-sm align-middle mb-0">
                                 <thead>
                                     <tr class="text-secondary small border-bottom">
-                                        <th class="py-2 border-0">Item</th>
+                                        <th class="py-2 border-0">Item & Customizations</th>
                                         <th class="py-2 border-0 text-center" style="width: 80px;">Qty</th>
                                         <th class="py-2 border-0 text-end" style="width: 100px;">Price</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($items as $line): ?>
-                                        <tr>
-                                            <td class="py-2.5 border-0 fw-semibold text-dark"><?= e($line['item_name']) ?></td>
-                                            <td class="py-2.5 border-0 text-center text-secondary"><?= e($line['quantity']) ?></td>
+                                        <tr class="border-bottom border-light">
+                                            <td class="py-2.5 border-0">
+                                                <div class="fw-semibold text-dark"><?= e($line['item_name']) ?></div>
+                                                <?php if (!empty($line['variant_name'])): ?>
+                                                    <span class="badge bg-secondary-subtle text-secondary small" style="font-size: 0.7rem;"><?= e($line['variant_name']) ?></span>
+                                                <?php endif; ?>
+                                                <?php if (!empty($line['customization_names'])): ?>
+                                                    <div class="small text-muted mt-0.5" style="font-size: 0.75rem;">+ <?= e($line['customization_names']) ?></div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($line['customer_note'])): ?>
+                                                    <div class="small text-warning-emphasis bg-warning-subtle px-2 py-0.5 rounded mt-1 d-inline-block" style="font-size: 0.72rem;">
+                                                        <i class="bi bi-chat-dots me-1"></i><?= e($line['customer_note']) ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="py-2.5 border-0 text-center text-secondary fw-bold"><?= e($line['quantity']) ?></td>
                                             <td class="py-2.5 border-0 text-end text-dark fw-bold">&#8377;<?= e(number_format((float)$line['line_total'], 2)) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
-                                    <tr class="border-top fw-bold text-dark">
-                                        <td colspan="2" class="py-3 border-0">Total Amount</td>
-                                        <td class="py-3 border-0 text-end fs-6">&#8377;<?= e(number_format((float)$order['total_amount'], 2)) ?></td>
+                                    
+                                    <?php if (!empty($order['tax_amount']) && (float)$order['tax_amount'] > 0): ?>
+                                        <tr class="text-secondary small">
+                                            <td colspan="2" class="pt-3 pb-1 border-0">Item Subtotal</td>
+                                            <td class="pt-3 pb-1 border-0 text-end fw-semibold">&#8377;<?= e(number_format((float)$order['subtotal'], 2)) ?></td>
+                                        </tr>
+                                        <tr class="text-secondary small">
+                                            <td colspan="2" class="py-1 border-0">Taxes & GST (5%)</td>
+                                            <td class="py-1 border-0 text-end fw-semibold">&#8377;<?= e(number_format((float)$order['tax_amount'], 2)) ?></td>
+                                        </tr>
+                                    <?php endif; ?>
+
+                                    <tr class="border-top fw-extrabold text-dark fs-6">
+                                        <td colspan="2" class="py-3 border-0">Grand Total</td>
+                                        <td class="py-3 border-0 text-end text-success fs-5">&#8377;<?= e(number_format((float)$order['total_amount'], 2)) ?></td>
                                     </tr>
                                 </tbody>
                             </table>

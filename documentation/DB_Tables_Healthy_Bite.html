@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6. DB/Tables – Healthy Bite Research Paper</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            color: #111111;
+            line-height: 1.45;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 30px 15px;
+        }
+        .paper-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 50px 60px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+        h1 {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #000000;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 18px;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #000000;
+            margin-top: 30px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+        }
+        h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin-top: 22px;
+            margin-bottom: 6px;
+        }
+        h4 {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        p {
+            font-size: 10.5pt;
+            text-align: justify;
+            margin-bottom: 10px;
+        }
+        .intro-box {
+            background-color: #f8fafc;
+            border-left: 3px solid #2b6cb0;
+            padding: 10px 15px;
+            font-size: 10pt;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            font-size: 9pt;
+        }
+        th, td {
+            border: 1px solid #cbd5e0;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #edf2f7;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        .sample-table th {
+            background-color: #ebf8ff;
+            color: #2c5282;
+        }
+        .badge-pk {
+            font-weight: bold;
+            color: #c53030;
+        }
+        .badge-fk {
+            font-weight: bold;
+            color: #2b6cb0;
+        }
+        .badge-uni {
+            font-weight: bold;
+            color: #744210;
+        }
+        .code-font {
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 8.5pt;
+        }
+        .summary-list {
+            padding-left: 20px;
+            font-size: 10.5pt;
+        }
+        .summary-list li {
+            margin-bottom: 6px;
+        }
+        .mermaid-container {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .paper-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        });
+    </script>
+</head>
+<body>
+
+<div class="paper-container">
+    <h1>6. DB/Tables</h1>
+    
+    <div class="intro-box">
+        This section documents the relational database design for <strong>Healthy Bite – Digital Menu &amp; Food Ordering System</strong>. The database schema consists of <strong>exactly 17 normalized tables</strong> implemented in MySQL 8.0 (InnoDB) in Third Normal Form (3NF).
+    </div>
+
+    <!-- Visual ER Diagram -->
+    <h2>Visual Entity Relationship Diagram (ERD)</h2>
+    <div class="mermaid-container">
+        <pre class="mermaid">
+erDiagram
+    admin ||--o{ users : "admin_id -> id"
+    roles ||--o{ users : "role_id -> id"
+    restaurants ||--o{ users : "restaurant_id -> id"
+    users ||--o{ restaurants : "owner_user_id -> id"
+    restaurants ||--o{ branches : "restaurant_id -> id"
+    restaurants ||--o{ categories : "restaurant_id -> id"
+    categories ||--o{ food_items : "category_id -> id"
+    food_items ||--o{ food_variants : "food_item_id -> id"
+    food_items ||--o{ food_customizations : "food_item_id -> id"
+    branches ||--o{ restaurant_tables : "branch_id -> id"
+    restaurant_tables ||--o{ qr_tokens : "restaurant_table_id -> id"
+    customers ||--o{ orders : "customer_id -> id"
+    branches ||--o{ orders : "branch_id -> id"
+    restaurant_tables ||--o{ orders : "restaurant_table_id -> id"
+    orders ||--o{ order_items : "order_id -> id"
+    food_items ||--o{ order_items : "food_item_id -> id"
+    food_variants ||--o{ order_items : "food_variant_id -> id"
+    order_items ||--o{ order_item_customizations : "order_item_id -> id"
+    food_customizations ||--o{ order_item_customizations : "food_customization_id -> id"
+    orders ||--|| payments : "order_id -> id"
+    customers ||--o{ reviews : "customer_id -> id"
+    restaurants ||--o{ reviews : "restaurant_id -> id"
+    orders ||--o{ reviews : "order_id -> id"
+    food_items ||--o{ reviews : "food_item_id -> id"
+    restaurant_tables ||--o{ reviews : "restaurant_table_id -> id"
+        </pre>
+    </div>
+
+    <!-- 1. Admin -->
+    <h3>1. Admin:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique administration level identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Admin group name (e.g., 'Platform Super Admin')</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Record creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Platform Super Admin</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Tenant Administrator</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 2. Roles -->
+    <h3>2. Roles:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique role identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(80)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Display title of the role</td>
+            </tr>
+            <tr>
+                <td class="code-font">slug</td>
+                <td>VARCHAR(50)</td>
+                <td><span class="badge-uni">UNI</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Unique machine slug (<code>super_admin</code>, <code>owner</code>, <code>staff</code>)</td>
+            </tr>
+            <tr>
+                <td class="code-font">description</td>
+                <td>VARCHAR(255)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Explanation of role permissions and access level</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Record creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>slug</th>
+                <th>description</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Super Admin</td>
+                <td>super_admin</td>
+                <td>Full platform access and system control</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Restaurant Owner</td>
+                <td>owner</td>
+                <td>Restaurant administrator with full branch control</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Staff</td>
+                <td>staff</td>
+                <td>Kitchen and order service operations</td>
+                <td>2026-08-01 09:00:00</td>
+                <td>2026-08-01 09:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 3. Users -->
+    <h3>3. Users:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique user account ID</td>
+            </tr>
+            <tr>
+                <td class="code-font">admin_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">admin(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">role_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">roles(id)</span> (ON DELETE RESTRICT)</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">restaurants(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Full operational/account name</td>
+            </tr>
+            <tr>
+                <td class="code-font">email</td>
+                <td>VARCHAR(190)</td>
+                <td><span class="badge-uni">UNI</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Unique login email address</td>
+            </tr>
+            <tr>
+                <td class="code-font">password_hash</td>
+                <td>VARCHAR(255)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Secure BCrypt password hash</td>
+            </tr>
+            <tr>
+                <td class="code-font">status</td>
+                <td>ENUM('active', 'inactive')</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>'active'</td>
+                <td>User account state</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Account registration timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last profile update timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>admin_id</th>
+                <th>role_id</th>
+                <th>restaurant_id</th>
+                <th>name</th>
+                <th>email</th>
+                <th>password_hash</th>
+                <th>status</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>NULL</td>
+                <td>Demo Admin</td>
+                <td>admin@healthybite.test</td>
+                <td>[HASHED_PASSWORD]</td>
+                <td>active</td>
+                <td>2026-08-01 10:00:00</td>
+                <td>2026-08-01 10:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>2</td>
+                <td>1</td>
+                <td>Demo Owner</td>
+                <td>owner@healthybite.test</td>
+                <td>[HASHED_PASSWORD]</td>
+                <td>active</td>
+                <td>2026-08-02 11:30:00</td>
+                <td>2026-08-02 11:30:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>NULL</td>
+                <td>3</td>
+                <td>1</td>
+                <td>Demo Staff</td>
+                <td>staff@healthybite.test</td>
+                <td>[HASHED_PASSWORD]</td>
+                <td>active</td>
+                <td>2026-08-03 14:00:00</td>
+                <td>2026-08-03 14:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 4. Restaurants -->
+    <h3>4. Restaurants:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique restaurant tenant ID</td>
+            </tr>
+            <tr>
+                <td class="code-font">owner_user_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">users(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(160)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Registered commercial restaurant name</td>
+            </tr>
+            <tr>
+                <td class="code-font">email</td>
+                <td>VARCHAR(190)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Business contact email</td>
+            </tr>
+            <tr>
+                <td class="code-font">phone</td>
+                <td>VARCHAR(30)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Business contact phone number</td>
+            </tr>
+            <tr>
+                <td class="code-font">address</td>
+                <td>VARCHAR(500)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Registered street address</td>
+            </tr>
+            <tr>
+                <td class="code-font">city</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>City</td>
+            </tr>
+            <tr>
+                <td class="code-font">state</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>State / Region</td>
+            </tr>
+            <tr>
+                <td class="code-font">cuisine_type</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Cuisine category (e.g., 'Organic &amp; Healthy')</td>
+            </tr>
+            <tr>
+                <td class="code-font">description</td>
+                <td>VARCHAR(1000)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Public description and profile overview</td>
+            </tr>
+            <tr>
+                <td class="code-font">approval_status</td>
+                <td>ENUM('pending', 'approved', 'suspended')</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>'approved'</td>
+                <td>Restaurant platform approval status</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Registration timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>owner_user_id</th>
+                <th>name</th>
+                <th>email</th>
+                <th>phone</th>
+                <th>address</th>
+                <th>city</th>
+                <th>state</th>
+                <th>cuisine_type</th>
+                <th>description</th>
+                <th>approval_status</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+                <td>Healthy Bite Demo Restaurant</td>
+                <td>restaurant@healthybite.test</td>
+                <td>9000000000</td>
+                <td>123 Green Avenue</td>
+                <td>San Francisco</td>
+                <td>CA</td>
+                <td>Organic &amp; Healthy</td>
+                <td>Fresh farm-to-table organic meals and juices.</td>
+                <td>approved</td>
+                <td>2026-08-02 11:30:00</td>
+                <td>2026-08-02 11:30:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 5. Branches -->
+    <h3>5. Branches:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique branch identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">restaurants(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(160)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Branch outlet title (e.g. 'Downtown Main Branch')</td>
+            </tr>
+            <tr>
+                <td class="code-font">phone</td>
+                <td>VARCHAR(30)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Branch direct contact phone</td>
+            </tr>
+            <tr>
+                <td class="code-font">address</td>
+                <td>VARCHAR(500)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Physical branch location address</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>restaurant_id</th>
+                <th>name</th>
+                <th>phone</th>
+                <th>address</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Downtown Main Branch</td>
+                <td>9000000001</td>
+                <td>123 Green Avenue, Downtown</td>
+                <td>2026-08-02 12:00:00</td>
+                <td>2026-08-02 12:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Uptown Express Outlet</td>
+                <td>9000000002</td>
+                <td>456 Wellness Boulevard, Uptown</td>
+                <td>2026-08-05 09:00:00</td>
+                <td>2026-08-05 09:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 6. Categories -->
+    <h3>6. Categories:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique category identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">restaurants(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(120)</td>
+                <td><span class="badge-uni">UNI</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Category display name (unique per restaurant)</td>
+            </tr>
+            <tr>
+                <td class="code-font">sort_order</td>
+                <td>INT UNSIGNED</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>0</td>
+                <td>Display sequence order</td>
+            </tr>
+            <tr>
+                <td class="code-font">is_active</td>
+                <td>TINYINT(1)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>1</td>
+                <td>Visibility toggle (1=active, 0=hidden)</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>restaurant_id</th>
+                <th>name</th>
+                <th>sort_order</th>
+                <th>is_active</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Salads &amp; Bowls</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2026-08-02 12:30:00</td>
+                <td>2026-08-02 12:30:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Fresh Smoothies</td>
+                <td>2</td>
+                <td>1</td>
+                <td>2026-08-02 12:30:00</td>
+                <td>2026-08-02 12:30:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>1</td>
+                <td>Warm Grain Bowls</td>
+                <td>3</td>
+                <td>1</td>
+                <td>2026-08-02 12:30:00</td>
+                <td>2026-08-02 12:30:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 7. Food Items -->
+    <h3>7. Food Items:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique dish identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">category_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">categories(id)</span> (ON DELETE RESTRICT)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(160)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Dish commercial name</td>
+            </tr>
+            <tr>
+                <td class="code-font">description</td>
+                <td>VARCHAR(1000)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Detailed culinary description</td>
+            </tr>
+            <tr>
+                <td class="code-font">image</td>
+                <td>VARCHAR(255)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Image asset URL or file path</td>
+            </tr>
+            <tr>
+                <td class="code-font">ingredients</td>
+                <td>TEXT</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Ingredients list</td>
+            </tr>
+            <tr>
+                <td class="code-font">base_price</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Base selling price</td>
+            </tr>
+            <tr>
+                <td class="code-font">calories</td>
+                <td>INT</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Energy value in calories (kcal)</td>
+            </tr>
+            <tr>
+                <td class="code-font">protein</td>
+                <td>DECIMAL(8,2)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Protein amount (grams)</td>
+            </tr>
+            <tr>
+                <td class="code-font">carbs</td>
+                <td>DECIMAL(8,2)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Carbohydrates amount (grams)</td>
+            </tr>
+            <tr>
+                <td class="code-font">fat</td>
+                <td>DECIMAL(8,2)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Total fat amount (grams)</td>
+            </tr>
+            <tr>
+                <td class="code-font">fiber_g</td>
+                <td>DECIMAL(8,2)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Dietary fiber amount (grams)</td>
+            </tr>
+            <tr>
+                <td class="code-font">sugar_g</td>
+                <td>DECIMAL(8,2)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Sugar content (grams)</td>
+            </tr>
+            <tr>
+                <td class="code-font">allergens</td>
+                <td>VARCHAR(255)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Allergen warnings (e.g. 'Dairy, Soy')</td>
+            </tr>
+            <tr>
+                <td class="code-font">preparation_time</td>
+                <td>INT</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Estimated kitchen prep duration (minutes)</td>
+            </tr>
+            <tr>
+                <td class="code-font">spice_level</td>
+                <td>VARCHAR(50)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>'medium'</td>
+                <td>Spice indicator (<code>low</code>, <code>medium</code>, <code>high</code>, <code>none</code>)</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_type</td>
+                <td>VARCHAR(50)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>'veg'</td>
+                <td>Dietary classification (<code>veg</code>, <code>non_veg</code>, <code>vegan</code>, <code>jain</code>)</td>
+            </tr>
+            <tr>
+                <td class="code-font">serving_size</td>
+                <td>VARCHAR(80)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Serving measure (e.g. '350g', '400ml')</td>
+            </tr>
+            <tr>
+                <td class="code-font">is_available</td>
+                <td>TINYINT(1)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>1</td>
+                <td>Stock availability (1=available, 0=out of stock)</td>
+            </tr>
+            <tr>
+                <td class="code-font">is_featured</td>
+                <td>TINYINT(1)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>0</td>
+                <td>Highlight toggle (1=featured/bestseller, 0=standard)</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>category_id</th>
+                <th>name</th>
+                <th>description</th>
+                <th>base_price</th>
+                <th>calories</th>
+                <th>protein</th>
+                <th>carbs</th>
+                <th>fat</th>
+                <th>fiber_g</th>
+                <th>sugar_g</th>
+                <th>allergens</th>
+                <th>food_type</th>
+                <th>is_available</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Greek Quinoa Crunch Salad</td>
+                <td>Fresh cucumbers, tomatoes, kalamata olives, quinoa, and feta.</td>
+                <td>12.50</td>
+                <td>340</td>
+                <td>12.50</td>
+                <td>28.00</td>
+                <td>16.00</td>
+                <td>6.50</td>
+                <td>4.00</td>
+                <td>Dairy</td>
+                <td>veg</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>Green Detox Glow Smoothie</td>
+                <td>Cold-pressed kale, green apple, ginger, cucumber, and chia.</td>
+                <td>7.50</td>
+                <td>180</td>
+                <td>4.00</td>
+                <td>34.00</td>
+                <td>1.50</td>
+                <td>5.00</td>
+                <td>18.00</td>
+                <td>None</td>
+                <td>vegan</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>3</td>
+                <td>Roasted Tofu Harvest Bowl</td>
+                <td>Organic baked tofu with roasted sweet potato and broccoli.</td>
+                <td>14.00</td>
+                <td>450</td>
+                <td>22.00</td>
+                <td>52.00</td>
+                <td>14.00</td>
+                <td>8.00</td>
+                <td>5.50</td>
+                <td>Soy, Sesame</td>
+                <td>vegan</td>
+                <td>1</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 8. Food Variants -->
+    <h3>8. Food Variants:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique variant identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_item_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">food_items(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(80)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Variant portion title (e.g. 'Large Power Bowl')</td>
+            </tr>
+            <tr>
+                <td class="code-font">price_adjustment</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>0.00</td>
+                <td>Incremental price difference from base item</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>food_item_id</th>
+                <th>name</th>
+                <th>price_adjustment</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Regular Bowl</td>
+                <td>0.00</td>
+                <td>2026-08-02 14:00:00</td>
+                <td>2026-08-02 14:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Large Power Bowl</td>
+                <td>3.50</td>
+                <td>2026-08-02 14:00:00</td>
+                <td>2026-08-02 14:00:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>2</td>
+                <td>Mega Booster (650ml)</td>
+                <td>2.50</td>
+                <td>2026-08-02 14:05:00</td>
+                <td>2026-08-02 14:05:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 9. Food Customizations -->
+    <h3>9. Food Customizations:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique customization identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_item_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">food_items(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Add-on title (e.g. 'Extra Avocado Slice')</td>
+            </tr>
+            <tr>
+                <td class="code-font">price_adjustment</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>0.00</td>
+                <td>Price added per unit</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>food_item_id</th>
+                <th>name</th>
+                <th>price_adjustment</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>Extra Avocado Slice</td>
+                <td>2.00</td>
+                <td>2026-08-02 14:10:00</td>
+                <td>2026-08-02 14:10:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>Organic Crumbled Feta</td>
+                <td>1.50</td>
+                <td>2026-08-02 14:10:00</td>
+                <td>2026-08-02 14:10:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>3</td>
+                <td>Extra Tahini Drizzle</td>
+                <td>1.00</td>
+                <td>2026-08-02 14:20:00</td>
+                <td>2026-08-02 14:20:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 10. Restaurant Tables -->
+    <h3>10. Restaurant Tables:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique table identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">branch_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">branches(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">table_number</td>
+                <td>VARCHAR(80)</td>
+                <td><span class="badge-uni">UNI</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Table designation (unique per branch)</td>
+            </tr>
+            <tr>
+                <td class="code-font">capacity</td>
+                <td>SMALLINT UNSIGNED</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>2</td>
+                <td>Seating capacity</td>
+            </tr>
+            <tr>
+                <td class="code-font">status</td>
+                <td>ENUM('available', 'occupied', 'cleaning', 'out_of_service')</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>'available'</td>
+                <td>Real-time table status</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>branch_id</th>
+                <th>table_number</th>
+                <th>capacity</th>
+                <th>status</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>T-01</td>
+                <td>4</td>
+                <td>available</td>
+                <td>2026-08-02 15:00:00</td>
+                <td>2026-08-02 15:00:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>T-02</td>
+                <td>2</td>
+                <td>occupied</td>
+                <td>2026-08-02 15:00:00</td>
+                <td>2026-08-02 15:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 11. QR Tokens -->
+    <h3>11. QR Tokens:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique token record ID</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_table_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">restaurant_tables(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">token</td>
+                <td>VARCHAR(255)</td>
+                <td><span class="badge-uni">UNI</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Cryptographic URL-safe token string</td>
+            </tr>
+            <tr>
+                <td class="code-font">expires_at</td>
+                <td>DATETIME</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Optional token expiration date/time</td>
+            </tr>
+            <tr>
+                <td class="code-font">is_active</td>
+                <td>TINYINT(1)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>1</td>
+                <td>Token status (1=active, 0=revoked)</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Generation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>restaurant_table_id</th>
+                <th>token</th>
+                <th>expires_at</th>
+                <th>is_active</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>hb_tok_9f82a1d04b9e28</td>
+                <td>NULL</td>
+                <td>1</td>
+                <td>2026-08-02 15:30:00</td>
+                <td>2026-08-02 15:30:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>hb_tok_6c11e48b70f4a3</td>
+                <td>NULL</td>
+                <td>1</td>
+                <td>2026-08-02 15:30:00</td>
+                <td>2026-08-02 15:30:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 12. Customers -->
+    <h3>12. Customers:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique customer identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">name</td>
+                <td>VARCHAR(120)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Customer full name</td>
+            </tr>
+            <tr>
+                <td class="code-font">phone</td>
+                <td>VARCHAR(30)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Contact phone number</td>
+            </tr>
+            <tr>
+                <td class="code-font">email</td>
+                <td>VARCHAR(190)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Contact email address</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Creation timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>name</th>
+                <th>phone</th>
+                <th>email</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Sophia Chen</td>
+                <td>9876543210</td>
+                <td>sophia.c@example.test</td>
+                <td>2026-08-10 12:15:00</td>
+                <td>2026-08-10 12:15:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Liam Thorne</td>
+                <td>9876543211</td>
+                <td>liam.thorne@example.test</td>
+                <td>2026-08-10 13:05:00</td>
+                <td>2026-08-10 13:05:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 13. Orders -->
+    <h3>13. Orders:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique order ticket ID</td>
+            </tr>
+            <tr>
+                <td class="code-font">branch_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">branches(id)</span> (ON DELETE RESTRICT)</td>
+            </tr>
+            <tr>
+                <td class="code-font">customer_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">customers(id)</span> (ON DELETE RESTRICT)</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_table_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">restaurant_tables(id)</span> (ON DELETE RESTRICT)</td>
+            </tr>
+            <tr>
+                <td class="code-font">order_number</td>
+                <td>VARCHAR(32)</td>
+                <td><span class="badge-uni">UNI</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Public human-readable order number</td>
+            </tr>
+            <tr>
+                <td class="code-font">status</td>
+                <td>ENUM('pending', 'accepted', 'preparing', 'ready', 'served', 'completed', 'cancelled')</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>'pending'</td>
+                <td>Current order processing state</td>
+            </tr>
+            <tr>
+                <td class="code-font">customer_note</td>
+                <td>VARCHAR(500)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Special preparation instructions</td>
+            </tr>
+            <tr>
+                <td class="code-font">subtotal</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Order subtotal before taxes</td>
+            </tr>
+            <tr>
+                <td class="code-font">tax_amount</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>0.00</td>
+                <td>Calculated tax total</td>
+            </tr>
+            <tr>
+                <td class="code-font">total_amount</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Final billed total (<code>subtotal + tax_amount</code>)</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Placement timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Status modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>branch_id</th>
+                <th>customer_id</th>
+                <th>restaurant_table_id</th>
+                <th>order_number</th>
+                <th>status</th>
+                <th>customer_note</th>
+                <th>subtotal</th>
+                <th>tax_amount</th>
+                <th>total_amount</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>HB-20260810-001</td>
+                <td>completed</td>
+                <td>Dressing on the side please.</td>
+                <td>20.00</td>
+                <td>1.00</td>
+                <td>21.00</td>
+                <td>2026-08-10 12:20:00</td>
+                <td>2026-08-10 12:45:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>2</td>
+                <td>1</td>
+                <td>HB-20260810-002</td>
+                <td>preparing</td>
+                <td>No ice in smoothie.</td>
+                <td>21.50</td>
+                <td>1.08</td>
+                <td>22.58</td>
+                <td>2026-08-10 13:10:00</td>
+                <td>2026-08-10 13:12:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 14. Order Items -->
+    <h3>14. Order Items:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique line item ID</td>
+            </tr>
+            <tr>
+                <td class="code-font">order_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">orders(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_item_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">food_items(id)</span> (ON DELETE RESTRICT)</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_variant_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">food_variants(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">item_name</td>
+                <td>VARCHAR(160)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Snapshot name of ordered dish</td>
+            </tr>
+            <tr>
+                <td class="code-font">unit_price</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Snapshot price at time of purchase</td>
+            </tr>
+            <tr>
+                <td class="code-font">quantity</td>
+                <td>INT UNSIGNED</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Quantity ordered</td>
+            </tr>
+            <tr>
+                <td class="code-font">line_total</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Line item total price</td>
+            </tr>
+            <tr>
+                <td class="code-font">customer_note</td>
+                <td>VARCHAR(300)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Item-specific preparation note</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Placement timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>order_id</th>
+                <th>food_item_id</th>
+                <th>food_variant_id</th>
+                <th>item_name</th>
+                <th>unit_price</th>
+                <th>quantity</th>
+                <th>line_total</th>
+                <th>customer_note</th>
+                <th>created_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>Greek Quinoa Crunch Salad (Large Power Bowl)</td>
+                <td>16.00</td>
+                <td>1</td>
+                <td>18.00</td>
+                <td>Extra dressing container</td>
+                <td>2026-08-10 12:20:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>1</td>
+                <td>2</td>
+                <td>NULL</td>
+                <td>Green Detox Glow Smoothie</td>
+                <td>7.50</td>
+                <td>1</td>
+                <td>7.50</td>
+                <td>NULL</td>
+                <td>2026-08-10 12:20:00</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>2</td>
+                <td>3</td>
+                <td>NULL</td>
+                <td>Roasted Tofu Harvest Bowl</td>
+                <td>14.00</td>
+                <td>1</td>
+                <td>15.00</td>
+                <td>Warm bowl please</td>
+                <td>2026-08-10 13:10:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 15. Order Item Customizations -->
+    <h3>15. Order Item Customizations:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique customization link identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">order_item_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">order_items(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_customization_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">food_customizations(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Link timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>order_item_id</th>
+                <th>food_customization_id</th>
+                <th>created_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2026-08-10 12:20:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>3</td>
+                <td>3</td>
+                <td>2026-08-10 13:10:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 16. Payments -->
+    <h3>16. Payments:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique payment record ID</td>
+            </tr>
+            <tr>
+                <td class="code-font">order_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">orders(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">amount</td>
+                <td>DECIMAL(10,2)</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Settled transaction amount</td>
+            </tr>
+            <tr>
+                <td class="code-font">method</td>
+                <td>ENUM('cash', 'upi', 'card')</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Payment channel</td>
+            </tr>
+            <tr>
+                <td class="code-font">status</td>
+                <td>ENUM('pending', 'completed', 'failed')</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>'pending'</td>
+                <td>Settlement status</td>
+            </tr>
+            <tr>
+                <td class="code-font">transaction_reference</td>
+                <td>VARCHAR(100)</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>External gateway/POS reference string</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Transaction timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>order_id</th>
+                <th>amount</th>
+                <th>method</th>
+                <th>status</th>
+                <th>transaction_reference</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>21.00</td>
+                <td>upi</td>
+                <td>completed</td>
+                <td>UPI-TXN-20260810-9842</td>
+                <td>2026-08-10 12:45:00</td>
+                <td>2026-08-10 12:45:00</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>22.58</td>
+                <td>card</td>
+                <td>pending</td>
+                <td>CARD-AUTH-90214</td>
+                <td>2026-08-10 13:10:00</td>
+                <td>2026-08-10 13:10:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 17. Reviews -->
+    <h3>17. Reviews:</h3>
+    <h4>Table Structure:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Data Type</th>
+                <th>Key</th>
+                <th>Null</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="code-font">id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-pk">PK</span></td>
+                <td>NO</td>
+                <td>AUTO_INCREMENT</td>
+                <td>Unique review identifier</td>
+            </tr>
+            <tr>
+                <td class="code-font">customer_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">customers(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>NO</td>
+                <td>-</td>
+                <td>References <span class="code-font">restaurants(id)</span> (ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td class="code-font">order_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">orders(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">food_item_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">food_items(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">restaurant_table_id</td>
+                <td>BIGINT UNSIGNED</td>
+                <td><span class="badge-fk">FK</span></td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>References <span class="code-font">restaurant_tables(id)</span> (ON DELETE SET NULL)</td>
+            </tr>
+            <tr>
+                <td class="code-font">rating</td>
+                <td>TINYINT UNSIGNED</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>-</td>
+                <td>Customer score (1 to 5 stars)</td>
+            </tr>
+            <tr>
+                <td class="code-font">comment</td>
+                <td>TEXT</td>
+                <td>-</td>
+                <td>YES</td>
+                <td>NULL</td>
+                <td>Qualitative review text</td>
+            </tr>
+            <tr>
+                <td class="code-font">created_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Submission timestamp</td>
+            </tr>
+            <tr>
+                <td class="code-font">updated_at</td>
+                <td>TIMESTAMP</td>
+                <td>-</td>
+                <td>NO</td>
+                <td>CURRENT_TIMESTAMP</td>
+                <td>Last modification timestamp</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Sample Database Records:</h4>
+    <table class="sample-table">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>customer_id</th>
+                <th>restaurant_id</th>
+                <th>order_id</th>
+                <th>food_item_id</th>
+                <th>restaurant_table_id</th>
+                <th>rating</th>
+                <th>comment</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>2</td>
+                <td>5</td>
+                <td>The Greek Quinoa Salad with extra avocado was exceptionally fresh and filling!</td>
+                <td>2026-08-10 13:00:00</td>
+                <td>2026-08-10 13:00:00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 6.1 Database Relationship Summary -->
+    <h2>6.1 Database Relationship Summary</h2>
+    <p>The Healthy Bite database architecture establishes the following logical relationships among the 17 tables:</p>
+    <ul class="summary-list">
+        <li><strong>Authentication &amp; Identity:</strong> <code>admin</code> (1 : N) and <code>roles</code> (1 : N) classify user capabilities in <code>users</code>. Each <code>restaurant</code> is owned by an owner user (<code>users.id</code>) and employs operational staff members (<code>users.restaurant_id</code>).</li>
+        <li><strong>Multi-Tenant Branch &amp; Seating Hierarchy:</strong> Each <code>restaurant</code> operates multiple physical <code>branches</code> (1 : N). Each <code>branch</code> manages physical <code>restaurant_tables</code> (1 : N), and each dining table generates dynamic, cryptographically secure <code>qr_tokens</code> (1 : N) for contactless menu ordering.</li>
+        <li><strong>Menu, Variants &amp; Customizations:</strong> <code>restaurants</code> partition menus into <code>categories</code> (1 : N). Each <code>category</code> contains multiple <code>food_items</code> (1 : N) storing nutritional macros and allergens. Each <code>food_item</code> offers portion sizes in <code>food_variants</code> (1 : N) and optional add-ons in <code>food_customizations</code> (1 : N).</li>
+        <li><strong>Orders, Fulfillment &amp; Payments:</strong> A <code>customer</code> seated at a <code>restaurant_table</code> in a <code>branch</code> places an <code>order</code> (1 : N). An <code>order</code> contains multiple <code>order_items</code> (1 : N) capturing immutable price snapshots. Selected extras are linked to ordered dishes via the associative bridge table <code>order_item_customizations</code> (M : N). Each <code>order</code> is settled via a <code>payments</code> transaction (1 : 1).</li>
+        <li><strong>Customer Feedback &amp; Reviews:</strong> Customers submit verified <code>reviews</code> associated with their <code>order</code>, specific <code>food_items</code>, dining <code>restaurant_table</code>, and parent <code>restaurant</code> (N : 1).</li>
+    </ul>
+
+    <!-- 6.2 Database Implementation Summary -->
+    <h2>6.2 Database Implementation Summary</h2>
+    <p>The Healthy Bite system is implemented using <strong>MySQL 8.0+</strong> with the <strong>InnoDB</strong> storage engine to guarantee full ACID compliance, foreign key enforcement, and crash recovery.</p>
+    <ul class="summary-list">
+        <li><strong>Primary Keys:</strong> Every table uses a 64-bit integer (<code>BIGINT UNSIGNED AUTO_INCREMENT</code>) primary key (<code>id</code>) for high-performance indexing and horizontal scalability.</li>
+        <li><strong>Referential Integrity:</strong> Enforces 25 active foreign keys with explicit cascading rules (<code>ON UPDATE CASCADE</code>, <code>ON DELETE CASCADE / RESTRICT / SET NULL</code>) to maintain referential integrity without orphan records.</li>
+        <li><strong>Precision Financials:</strong> Money attributes (<code>base_price</code>, <code>unit_price</code>, <code>subtotal</code>, <code>tax_amount</code>, <code>total_amount</code>, <code>amount</code>) use <code>DECIMAL(10,2)</code> to prevent floating-point calculation errors.</li>
+        <li><strong>Universal Character Encoding:</strong> Universal <code>utf8mb4</code> encoding with <code>utf8mb4_unicode_ci</code> collation ensures multilingual support and emoji compatibility.</li>
+    </ul>
+</div>
+
+</body>
+</html>

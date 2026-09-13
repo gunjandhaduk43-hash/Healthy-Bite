@@ -41,17 +41,17 @@
                 </div>
                 
                 <h1 class="hero-title text-white font-display mb-4">
-                    Contactless QR Menus &amp; <br class="d-none d-md-inline"><span class="gradient-text-emerald">Real-Time Kitchen Automation</span>
+                    Universal QR Menus &amp; <br class="d-none d-md-inline"><span class="gradient-text-emerald">Effortless Food Ordering</span>
                 </h1>
                 
                 <p class="hero-subtitle mb-4 mb-lg-5 mx-auto" style="max-width: 760px;">
-                    Transform table dining with instant QR menu tokens, real-time kitchen order display tickets, calorie &amp; macro nutrition calculation, and live sales analytics.
+                    Built for any restaurant and any cuisine — Italian, Mexican, Indian, Gujarati, Japanese, American, and more. Elevate your dining experience with instant table QR codes, interactive food customizations, real-time kitchen order displays, and transparent payments.
                 </p>
 
                 <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-3">
                     <?php if (!empty($demoToken)): ?>
                         <a href="<?= e(url('/menu?token=' . $demoToken)) ?>" class="btn glowing-btn-emerald btn-lg px-4.5 py-3 fw-bold rounded-pill shadow-lg d-inline-flex align-items-center justify-content-center gap-2 w-100 w-sm-auto" style="font-size: 1rem;">
-                            <i class="bi bi-qr-code-scan fs-5"></i> Try Live Customer Menu
+                            <i class="bi bi-qr-code-scan fs-5"></i> Scan &amp; Order Demo
                         </a>
                     <?php endif; ?>
                     <a href="<?= e(url('/register')) ?>" class="btn btn-outline-light btn-lg px-4.5 py-3 fw-semibold rounded-pill d-inline-flex align-items-center justify-content-center gap-2 w-100 w-sm-auto" style="font-size: 1rem; border-color: rgba(255,255,255,0.25);">
@@ -135,7 +135,8 @@
                                             <i class="bi bi-person-badge text-success fs-5"></i> Owner Portal
                                         </div>
                                         <p class="text-muted small mb-2" style="font-size: 0.78rem;">Manage menu, pricing, QR tables &amp; staff.</p>
-                                        <div class="font-monospace text-dark small bg-white p-1.5 rounded border text-truncate" style="font-size: 0.72rem;">owner@healthybite.com</div>
+                                        <div class="font-monospace text-dark small bg-white p-1.5 rounded border text-truncate" style="font-size: 0.72rem;">owner@healthybite.test</div>
+                                        <div class="text-muted small mt-1" style="font-size: 0.68rem;">Pass: Admin@12345</div>
                                     </div>
                                     <a href="<?= e(url('/login')) ?>" class="btn btn-sm btn-success w-100 fw-semibold mt-3">Sign In as Owner</a>
                                 </div>
@@ -149,7 +150,8 @@
                                             <i class="bi bi-shield-lock text-primary fs-5"></i> Super Admin
                                         </div>
                                         <p class="text-muted small mb-2" style="font-size: 0.78rem;">Platform oversight &amp; tenant management.</p>
-                                        <div class="font-monospace text-dark small bg-white p-1.5 rounded border text-truncate" style="font-size: 0.72rem;">admin@healthybite.com</div>
+                                        <div class="font-monospace text-dark small bg-white p-1.5 rounded border text-truncate" style="font-size: 0.72rem;">admin@healthybite.test</div>
+                                        <div class="text-muted small mt-1" style="font-size: 0.68rem;">Pass: Admin@12345</div>
                                     </div>
                                     <a href="<?= e(url('/login')) ?>" class="btn btn-sm btn-outline-primary w-100 fw-semibold mt-3">Sign In as Admin</a>
                                 </div>
@@ -163,7 +165,8 @@
                                             <i class="bi bi-fire text-warning fs-5"></i> Kitchen Staff
                                         </div>
                                         <p class="text-muted small mb-2" style="font-size: 0.78rem;">Real-time order tickets &amp; status queue.</p>
-                                        <div class="font-monospace text-dark small bg-white p-1.5 rounded border text-truncate" style="font-size: 0.72rem;">staff@healthybite.com</div>
+                                        <div class="font-monospace text-dark small bg-white p-1.5 rounded border text-truncate" style="font-size: 0.72rem;">staff@healthybite.test</div>
+                                        <div class="text-muted small mt-1" style="font-size: 0.68rem;">Pass: Admin@12345</div>
                                     </div>
                                     <a href="<?= e(url('/login')) ?>" class="btn btn-sm btn-outline-warning text-dark w-100 fw-semibold mt-3">Sign In as Staff</a>
                                 </div>

@@ -37,13 +37,14 @@ final class ReportController extends Controller
         $metricsStmt = $connection->prepare(
             'SELECT 
                 COUNT(*) AS orders_count, 
-                COALESCE(SUM(total_amount), 0) AS revenue, 
-                COALESCE(AVG(total_amount), 0) AS average_order 
+                COALESCE(SUM(orders.total_amount), 0) AS revenue, 
+                COALESCE(AVG(orders.total_amount), 0) AS average_order 
              FROM orders 
-             WHERE restaurant_id = :restaurant_id 
-               AND status <> "cancelled"
-               AND DATE(created_at) >= :start_date
-               AND DATE(created_at) <= :end_date'
+             INNER JOIN branches ON branches.id = orders.branch_id
+             WHERE branches.restaurant_id = :restaurant_id 
+               AND orders.status <> "cancelled"
+               AND DATE(orders.created_at) >= :start_date
+               AND DATE(orders.created_at) <= :end_date'
         );
         $metricsStmt->execute([
             'restaurant_id' => $restaurantId,
@@ -61,7 +62,8 @@ final class ReportController extends Controller
                 SUM(order_items.line_total) AS total_sales
              FROM order_items
              INNER JOIN orders ON orders.id = order_items.order_id
-             WHERE orders.restaurant_id = :restaurant_id
+             INNER JOIN branches ON branches.id = orders.branch_id
+             WHERE branches.restaurant_id = :restaurant_id
                AND orders.status <> "cancelled"
                AND DATE(orders.created_at) >= :start_date
                AND DATE(orders.created_at) <= :end_date
@@ -79,15 +81,16 @@ final class ReportController extends Controller
         // 3. Fetch Daily Sales (for micro charts / reports list)
         $dailySalesStmt = $connection->prepare(
             'SELECT 
-                DATE(created_at) AS order_date,
+                DATE(orders.created_at) AS order_date,
                 COUNT(*) AS day_order_count,
-                SUM(total_amount) AS day_revenue
+                SUM(orders.total_amount) AS day_revenue
              FROM orders
-             WHERE restaurant_id = :restaurant_id
-               AND status <> "cancelled"
-               AND DATE(created_at) >= :start_date
-               AND DATE(created_at) <= :end_date
-             GROUP BY DATE(created_at)
+             INNER JOIN branches ON branches.id = orders.branch_id
+             WHERE branches.restaurant_id = :restaurant_id
+               AND orders.status <> "cancelled"
+               AND DATE(orders.created_at) >= :start_date
+               AND DATE(orders.created_at) <= :end_date
+             GROUP BY DATE(orders.created_at)
              ORDER BY order_date DESC'
         );
         $dailySalesStmt->execute([

@@ -1,26 +1,29 @@
 # Data Dictionary and ER Diagram
 
-The complete MVP database design is maintained in [Database Design](../DATABASE_DESIGN.md) and [ER Diagram](../ER_DIAGRAM.md).
+The complete authoritative database design is maintained in [Database Design](../DATABASE_DESIGN.md) and [ER Diagram](../ER_DIAGRAM.md).
 
-## College data dictionary summary
+## Authoritative 17-Table Data Dictionary Summary
 
-| Table | Primary key | Major foreign keys | Purpose |
-| --- | --- | --- | --- |
-| `users` | `id` | `restaurant_id` | Owner/staff/super-admin login identity |
-| `restaurants` | `id` | `owner_user_id` | Restaurant profile and approval state |
-| `categories` | `id` | `restaurant_id` | Food grouping |
-| `food_items` | `id` | `restaurant_id`, `category_id` | Menu item details and price |
-| `food_nutrition` | `food_item_id` | `food_item_id` | Nutrition values per item |
-| `ingredients` | `id` | - | Reusable ingredient master |
-| `food_ingredients` | composite | `food_item_id`, `ingredient_id` | Food ingredient mapping |
-| `allergens` | `id` | - | Reusable allergen master |
-| `food_allergens` | composite | `food_item_id`, `allergen_id` | Food allergen mapping |
-| `restaurant_tables` | `id` | `restaurant_id` | Restaurant table details |
-| `qr_tokens` | `id` | `restaurant_table_id` | Hashed secure QR token |
-| `orders` | `id` | `restaurant_id`, `table_id` | Order header and total |
-| `order_items` | `id` | `order_id`, `food_item_id` | Ordered food lines |
-| `order_status_history` | `id` | `order_id`, `changed_by_user_id` | Audit of status updates |
+| # | Table | Primary Key | Major Foreign Keys | Purpose |
+|---|---|---|---|---|
+| 1 | `admin` | `id` | None | Platform administration master entity |
+| 2 | `roles` | `id` | None | Master authorization role definitions |
+| 3 | `users` | `id` | `admin_id`, `role_id`, `restaurant_id` | Super admin, owner, manager, and staff credentials |
+| 4 | `restaurants` | `id` | `owner_user_id` | Restaurant tenant profile and approval state |
+| 5 | `branches` | `id` | `restaurant_id` | Physical location branches |
+| 6 | `categories` | `id` | `restaurant_id` | Food and menu grouping |
+| 7 | `food_items` | `id` | `category_id` | Menu item details, prices, and nutrition |
+| 8 | `food_variants` | `id` | `food_item_id` | Item portion and size options |
+| 9 | `food_customizations` | `id` | `food_item_id` | Add-on ingredients and extras |
+| 10 | `restaurant_tables` | `id` | `branch_id` | Physical table seating details |
+| 11 | `qr_tokens` | `id` | `restaurant_table_id` | Secure dynamic QR tokens |
+| 12 | `customers` | `id` | None | Guest diner account profiles |
+| 13 | `orders` | `id` | `branch_id`, `customer_id`, `restaurant_table_id` | Customer order tickets and totals |
+| 14 | `order_items` | `id` | `order_id`, `food_item_id`, `food_variant_id` | Ordered line-item dishes |
+| 15 | `order_item_customizations` | `id` | `order_item_id`, `food_customization_id` | Chosen line-item add-ons |
+| 16 | `payments` | `id` | `order_id` | POS transaction settlements |
+| 17 | `reviews` | `id` | `customer_id`, `restaurant_id`, `order_id`, `food_item_id`, `restaurant_table_id` | Verified customer reviews and ratings |
 
-## ERD submission note
+## ERD Submission Note
 
-Render the Mermaid ER diagram from `docs/ER_DIAGRAM.md` into an image or redraw it using draw.io before adding it to the final bound report. Keep all table and relationship names identical.
+Render the Mermaid ER diagram from `docs/ER_DIAGRAM.md` or `docs/ER_DIAGRAM_SIMPLE.md` into an image or redraw it using draw.io before adding it to the final bound report. Keep all 17 table and relationship names identical.

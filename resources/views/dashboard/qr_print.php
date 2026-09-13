@@ -3,7 +3,7 @@
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $menuUrl = $scheme . '://' . $host . url('/menu?token=' . $token);
-$qrCodeApiUrl = 'https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=' . urlencode($menuUrl);
+$qrCodeApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($menuUrl);
 ?>
 
 <div class="container text-center py-4 no-print">
